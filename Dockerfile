@@ -1,4 +1,5 @@
 FROM node:latest
+RUN npm i -g npm foreman
 
 WORKDIR  /app
 ADD package.json /app/
