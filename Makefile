@@ -7,8 +7,8 @@ build:
 	docker build -t premiersted:latest .
 
 run:
-	docker rm -f premiersted
-	docker run --name premiersted -d premiersted:latest
+	docker rm -f api.premiersted.schibsted.ga
+	docker run --name api.premiersted.schibsted.ga -d premiersted:latest
 
 run-dev: build
 	docker rm -f premiersted-dev || true
@@ -19,3 +19,6 @@ logs:
 
 logs-dev:
 	docker logs -f premiersted-dev
+	
+run:
+	make -f api/Makefile run

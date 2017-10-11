@@ -2,19 +2,22 @@
   "name": "deploy",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "bin": {
-    "deploy": "app/index.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app/index",
+    "db:migrate": "node db/migrate"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.2",
+    "jsonwebtoken": "^8.1.0",
     "mysql2": "^1.4.2",
-    "ramda": "^0.25.0"
+    "passport": "^0.4.0",
+    "passport-github": "^1.1.0",
+    "ramda": "^0.25.0",
+    "varium": "^1.0.1"
   },
   "devDependencies": {
     "eslint": "^4.8.0",
