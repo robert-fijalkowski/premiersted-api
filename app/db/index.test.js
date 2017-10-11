@@ -12,7 +12,7 @@ describe('Connect to db', () => {
   it('should create correct credentials object', () => {
     const creds = credentials(config());
     expect(creds).toMatchObject({
-      database: 'premiersted',
+      database: 'premiersted-it',
       host: 'localhost',
       password: 'premiersted',
       user: 'root',

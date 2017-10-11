@@ -22,9 +22,9 @@ const conn = async (cfg) => {
   });
   return conn(cfg);
 };
-
 module.exports = {
   conn,
   credentials,
-  user: require('./modules/user')(config()),
+  user: require('./modules/user')(conn(config())),
+  games: require('./modules/games')(conn(config())),
 };
