@@ -7,14 +7,20 @@ const config = require('../../config');
 
 config(configTest);
 
-const { games, conn } = require('../index');
+const {
+  games, conn,
+} = require('../index');
 
 const chance = require('chance')();
 
-chance.mixin({ gdnkrk: () => chance.pickone(['Kraków', 'Gdańsk']),
-  game: () => ({ name: chance.name(),
+chance.mixin({
+  gdnkrk: () => chance.pickone(['Kraków', 'Gdańsk']),
+  game: () => ({
+    name: chance.name(),
     location: chance.gdnkrk(),
-    img: chance.hash() }) });
+    img: chance.hash(),
+  }),
+});
 
 const sample = chance.game();
 
@@ -24,7 +30,9 @@ describe('games management', () => {
   });
   it('should create league with status open with some ID', async () => {
     const game = await games.create(sample);
-    expect(game).toMatchObject({ ...sample, meta: undefined });
+    expect(game).toMatchObject({
+      ...sample, meta: undefined,
+    });
     sample.id = game.id; // update sample to future lookup
   });
 
@@ -45,7 +53,9 @@ describe('games management', () => {
   });
 
   it('should not duplicate entries during search both by location and name', async () => {
-    const game = await games.findBy({ location: sample.location, name: sample.name });
+    const game = await games.findBy({
+      location: sample.location, name: sample.name,
+    });
     expect(game).toHaveLength(1);
     expect(game[0]).toMatchObject(sample);
   });
@@ -62,7 +72,9 @@ describe('games management', () => {
   });
   it('should get only from location or contains a in name', async () => {
     const desiredLocation = chance.gdnkrk();
-    const result = await games.findBy({ location: desiredLocation, name: 'a' });
+    const result = await games.findBy({
+      location: desiredLocation, name: 'a',
+    });
     result.forEach((oneSample) => {
       if (oneSample.location !== desiredLocation) {
         expect(oneSample.name).toMatch(/a/i);
@@ -74,9 +86,13 @@ describe('games management', () => {
   it('should modify particular game state', async () => {
     const game = chance.pickone(await games.getAll());
     const img = chance.hash();
-    await games.update({ ...game, status: 'ONGOING', img });
+    await games.update({
+      ...game, status: 'ONGOING', img,
+    });
     const updated = await games.findById(game.id);
-    expect(updated).toMatchObject({ id: game.id, name: game.name, status: 'ONGOING', img });
+    expect(updated).toMatchObject({
+      id: game.id, name: game.name, status: 'ONGOING', img,
+    });
   });
   it('should get plenty number of created games', async () => {
     const allGames = await games.getAll();

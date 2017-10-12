@@ -1,7 +1,9 @@
 const R = require('ramda');
 
-const decodeUser = user => ({ ...R.omit(R.prop('meta'), user),
-  meta: (JSON.parse(user.meta)) });
+const decodeUser = user => ({
+  ...R.omit(R.prop('meta'), user),
+  meta: (JSON.parse(user.meta)),
+});
 module.exports = dbP => ({
   async findById(id) {
     const db = await dbP;
@@ -16,17 +18,25 @@ module.exports = dbP => ({
     const [users] = await db.execute('SELECT * FROM users', []);
     return users.map(decodeUser);
   },
-  async store({ id, ...rest }) {
+  async store({
+    id, ...rest
+  }) {
     const db = await dbP;
     db.execute('INSERT INTO users(id, access, meta) VALUES(?,?,?)', [id, 'NONE', JSON.stringify(rest)]);
     return this.findById(id);
   },
-  async updateMeta({ id, meta, access, ...rest }) {
+  async updateMeta({
+    id, meta, access, ...rest
+  }) {
     const db = await dbP;
-    await db.execute('UPDATE users SET meta=? WHERE id=?', [JSON.stringify({ ...meta, ...rest }), id]);
+    await db.execute('UPDATE users SET meta=? WHERE id=?', [JSON.stringify({
+      ...meta, ...rest,
+    }), id]);
     return this.findById(id);
   },
-  async setAccess({ id, access }) {
+  async setAccess({
+    id, access,
+  }) {
     const db = await dbP;
     await db.execute('UPDATE users SET access=? WHERE id=?', [access, id]);
     return this.findById(id);

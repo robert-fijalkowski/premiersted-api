@@ -3,16 +3,22 @@ const R = require('ramda');
 const numberOfQueries = n => R.pipe(R.values, R.length, R.equals(n));
 
 module.exports = dbP => ({
-  async add({ gid, uid, club }) {
+  async add({
+    gid, uid, club,
+  }) {
     const db = await dbP;
     await db.execute(
       'INSERT INTO competitors(gid,uid,club) values (:gid, :uid,:club)',
-      { gid, uid, club },
+      {
+        gid, uid, club,
+      },
     );
   },
   async find(query = {}) {
     const db = await dbP;
-    const genericFind = (field, value) => db.query('SELECT * FROM competitors WHERE ::field = :value', { field, value })
+    const genericFind = (field, value) => db.query('SELECT * FROM competitors WHERE ::field = :value', {
+      field, value,
+    })
       .then(R.prop(0));
     return R.cond([
       [numberOfQueries(1), async q => genericFind(R.keys(q)[0], R.values(q)[0])],
@@ -22,7 +28,9 @@ module.exports = dbP => ({
   },
   async delete(query = {}) {
     const db = await dbP;
-    const genericFind = (field, value) => db.query('DELETE FROM competitors WHERE ::field = :value', { field, value }).then(R.always({}))
+    const genericFind = (field, value) => db.query('DELETE FROM competitors WHERE ::field = :value', {
+      field, value,
+    }).then(R.always({}))
       .then(R.prop(0));
     return R.cond([
       [numberOfQueries(1), async q => genericFind(R.keys(q)[0], R.values(q)[0])],

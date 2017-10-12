@@ -6,15 +6,19 @@ const config = require('../config');
 
 config(configTest);
 
-const { conn, credentials } = require('./index');
+const {
+  conn, credentials,
+} = require('./index');
 
 describe('Connect to db', () => {
   it('should create correct credentials object', () => {
     const creds = credentials(config());
-    expect(creds).toMatchObject({ database: 'premiersted-it',
+    expect(creds).toMatchObject({
+      database: 'premiersted-it',
       host: 'localhost',
       password: 'premiersted',
-      user: 'root' });
+      user: 'root',
+    });
   });
   it('should create connection', async () => {
     const db = await conn(config());

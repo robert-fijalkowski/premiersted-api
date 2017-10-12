@@ -4,10 +4,12 @@ const mysql = require('mysql2/promise');
 const memo = {};
 const config = require('../config');
 
-const credentials = cfg => ({ host: cfg.get('MYSQL_HOST'),
+const credentials = cfg => ({
+  host: cfg.get('MYSQL_HOST'),
   user: cfg.get('MYSQL_USER'),
   password: cfg.get('MYSQL_PASSWORD'),
-  database: cfg.get('MYSQL_DB') });
+  database: cfg.get('MYSQL_DB'),
+});
 
 const conn = async (cfg) => {
   const creds = credentials(cfg);
@@ -15,8 +17,10 @@ const conn = async (cfg) => {
   if (memo[key]) {
     return memo[key];
   }
-  memo[key] = mysql.createPool({ ...creds,
-    namedPlaceholders: true });
+  memo[key] = mysql.createPool({
+    ...creds,
+    namedPlaceholders: true,
+  });
   memo[key].on('end', () => { memo[key] = null; });
   return conn(cfg);
 };

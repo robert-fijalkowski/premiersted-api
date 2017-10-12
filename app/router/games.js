@@ -12,7 +12,9 @@ app.get('/:id', async (req, res) => {
 
 app.post('/:id', async (req, res) => {
   const game = await db.games.findById(req.params.id);
-  res.json(await games.update({ ...game, ...req.body, ...req.params }));
+  res.json(await games.update({
+    ...game, ...req.body, ...req.params,
+  }));
 });
 
 app.delete('/:id', async (req, res) => {
@@ -20,7 +22,7 @@ app.delete('/:id', async (req, res) => {
 });
 
 app.post('/:id/competitors', async (req, res) => {
-  await games.addCompetitor(req.body);
+  await games.addCompetitor(req.params.id, req.body);
   res.json(await games.get({ id: req.params.id }));
 });
 app.post('/', async (req, res) => {

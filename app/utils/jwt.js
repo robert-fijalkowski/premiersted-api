@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 
 const config = require('../config')();
-const { user, level } = require('./db');
+const {
+  user, level,
+} = require('./db');
 
 const template = token => `
   <html>
@@ -20,7 +22,9 @@ const template = token => `
 `;
 const auth = (req, res) => {
   if (req.user) {
-    const token = jwt.sign(req.user, config.get('JWT_SECRET'), { issuer: 'Premiersted', expiresIn: '7 days' });
+    const token = jwt.sign(req.user, config.get('JWT_SECRET'), {
+      issuer: 'Premiersted', expiresIn: '7 days',
+    });
     res.send(template(token));
   }
 };
@@ -57,4 +61,6 @@ const protectLevel = requestedLevel => (req, res, next) => {
       });
   });
 };
-module.exports = { auth, protect, protectLevel };
+module.exports = {
+  auth, protect, protectLevel,
+};

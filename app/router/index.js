@@ -3,5 +3,6 @@
 module.exports = (app) => {
   app.use('/users', require('./users'));
   app.use('/games', require('./games'));
+  app.use('/clubs', require('./clubs'));
 };
 

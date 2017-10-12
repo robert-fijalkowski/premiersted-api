@@ -1,15 +1,21 @@
 const R = require('ramda');
 const randomatic = require('randomatic');
 
-const decodeGame = game => ({ ...game, meta: undefined, ...JSON.parse(game.meta) });
+const decodeGame = game => ({
+  ...game, meta: undefined, ...JSON.parse(game.meta),
+});
 
 module.exports = dbP => ({
-  async create({ name, id, location, ...meta }) {
+  async create({
+    name, id, location, ...meta
+  }) {
     const db = await dbP;
     const newId = randomatic('Aa0', 5);
     await db.execute(
       'INSERT INTO games(id, name, location, status, meta) values (?,?,?,?,?)',
-      [newId, name, location, 'OPEN', JSON.stringify({ ...meta, created: new Date().toUTCString() })],
+      [newId, name, location, 'OPEN', JSON.stringify({
+        ...meta, created: new Date().toUTCString(),
+      })],
     );
     return this.findById(newId);
   },
@@ -38,7 +44,9 @@ module.exports = dbP => ({
   },
   async findBy(by = {}) {
     const db = await dbP;
-    const genericFind = (field, value) => db.query('SELECT * FROM games WHERE ::field REGEXP :value', { field, value })
+    const genericFind = (field, value) => db.query('SELECT * FROM games WHERE ::field REGEXP :value', {
+      field, value,
+    })
       .then(R.prop(0));
     const acceptedQueries = R.pickAll(['name', 'location', 'status']);
     const queries = R.mapObjIndexed((value, key) => genericFind(key, value));

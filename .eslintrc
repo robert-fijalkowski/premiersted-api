@@ -1,7 +1,6 @@
 {
   "extends": "airbnb",
   "rules": {
-    "no-underscore-dangle": "off",
-    "object-curly-newline": ["error",  { "minProperties": 5 }]
+    "no-underscore-dangle": "off"
   }
 }

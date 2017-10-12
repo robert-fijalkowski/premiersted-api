@@ -2,7 +2,9 @@ const R = require('ramda');
 const randomatic = require('randomatic');
 
 module.exports = dbP => ({
-  async create({ gid, home, away, ...meta }) {
+  async create({
+    gid, home, away, ...meta
+  }) {
     const db = await dbP;
     const id = randomatic('Aa0', 6);
     await db.execute(
