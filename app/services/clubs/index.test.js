@@ -1,6 +1,7 @@
 /* eslint-env jest,node */
 const clubs = require('./index');
-const data = require('./clubs.json');
+
+const { data } = clubs;
 const chance = require('chance')();
 
 describe('filtering ', () => {
@@ -33,8 +34,14 @@ describe('filtering ', () => {
   });
   it('should be threat as search', () => {
     const name = 'Madrid';
-    const result = clubs.get({ name });
+    const result = clubs.get({ name: 'mADrID' });
     expect(result).toHaveLength(2);
     result.forEach(club => expect(club.name).toMatch(name));
+  });
+  it('should get only exact stars teams', () => {
+    const stars = 4;
+    const result = clubs.get({ stars });
+    expect(result.length).toBeGreaterThan(30);
+    result.forEach(club => expect(club.stars).toEqual(stars));
   });
 });
