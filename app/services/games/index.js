@@ -38,8 +38,7 @@ module.exports = {
     return games.create(o);
   },
   async update(o) {
-    await games.update(o);
-    return this.get(o.id);
+    return games.update(o).then(({ id }) => this.get({ id }));
   },
   async schedule({ gid }) {
     const gamePlayers = await competitors.find({ gid });
