@@ -19,30 +19,30 @@ const addStars = R.map(o => ({
 }));
 const data = addStars(rawData);
 
+const useAllKeysToFilter = (query) => {
+  const keys = R.keys(query);
+  const lowerCased = R.pipe(R.toString, R.toLower);
+  const comparator = name => R.ifElse(
+    R.is(String),
+    R.pipe(lowerCased, R.contains(R.prop(name, query).toString().toLocaleLowerCase())),
+    R.equals(parseFloat(R.prop(name, query))),
+  );
+  const foundPartials = name => R.pipe(
+    R.prop(name),
+    comparator(name),
+  );
+  const filters = R.map(name => R.filter(foundPartials(name)))(keys);
+  return filters.reduce((acc, next) => R.pipe(acc, next), R.filter(R.T));
+};
+const nConditions = n => R.pipe(R.values, R.length, R.equals(n));
 module.exports = {
   get(query) {
-    const useAllKeysToFilter = (fields) => {
-      const keys = R.keys(fields);
-      const lowerCased = R.pipe(R.toString, R.toLower);
-      const comparator = name => R.ifElse(
-        R.is(String),
-        R.pipe(lowerCased, R.contains(R.prop(name, fields).toString().toLocaleLowerCase())),
-        R.equals(parseFloat(R.prop(name, fields))),
-      );
-      const foundPartials = name => R.pipe(
-        R.prop(name),
-        comparator(name),
-      );
-      const filters = R.map(name => R.filter(foundPartials(name)))(keys);
-      return filters.reduce((acc, next) => R.pipe(acc, next), R.filter(R.T));
-    };
-
-    const filteredData = R.cond([
-      [R.prop('id'), ({ id }) => R.pipe(R.filter(R.propEq('id', id)), R.head)],
+    const filterData = R.cond([
+      [R.both(R.prop('id'), nConditions(1)), ({ id }) => R.pipe(R.filter(R.propEq('id', id)), R.head)],
       [R.complement(R.isEmpty), useAllKeysToFilter],
       [R.T, () => R.identity()],
     ])(query);
-    return filteredData(data);
+    return filterData(data);
   },
   data,
 };
