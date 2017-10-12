@@ -1,4 +1,2 @@
-module.exports = {
-  NotFound: class NotFound {},
-};
+module.exports = { NotFound: class NotFound {} };
 
