@@ -42,6 +42,7 @@ module.exports = dbP => ({
     const db = await dbP;
     await db.execute('CREATE TABLE `competitors` ( `gid` VARCHAR(32) NOT NULL , `uid` VARCHAR(32) NOT NULL , `club` INT NOT NULL ) ENGINE = InnoDB;');
     await db.execute('ALTER TABLE `competitors` ADD PRIMARY KEY (`gid`,`uid`), ADD KEY `gid` (`gid`), ADD KEY `uid` (`uid`);');
+    await db.execute('ALTER TABLE `competitors` CHANGE `club` `club` VARCHAR(5) NOT NULL;');
   },
   async drop() {
     const db = await dbP;

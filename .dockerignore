@@ -2,3 +2,6 @@ node_modules
 .eslintrc
 .vscode
 Dockerfile
+Makefile
+*.sh
+.env

@@ -2,6 +2,8 @@ const {
   games, competitors, contests,
 } = require('../../db');
 
+const clubs = require('../clubs');
+
 const R = require('ramda');
 
 const detailedGame = async ({ id }) => {
@@ -9,7 +11,10 @@ const detailedGame = async ({ id }) => {
   if (!game) {
     return null;
   }
-  const comps = await competitors.find({ gid: id });
+  const comps = R.map(R.evolve({
+    club: R.pipe(R.assoc('id', R.__, {}), clubs.get),
+    gid: R.none,
+  }))(await competitors.find({ gid: id }));
   return {
     ...game,
     competitors: comps,
