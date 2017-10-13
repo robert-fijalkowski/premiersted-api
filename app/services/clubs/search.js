@@ -1,11 +1,6 @@
 const R = require('ramda');
-const d = require('talisman/metrics/distance/jaro');
 
-let n = 0;
-const distancator = R.curry((a, b) => {
-  n++;
-  return d(a, b);
-});
+const distancator = R.curry(require('talisman/metrics/distance/jaro'));
 const fingerprint = require('talisman/keyers/fingerprint');
 
 const qualities = R.pipe(
