@@ -3,6 +3,7 @@ const clubs = require('./index');
 
 const { data } = clubs;
 const chance = require('chance')();
+const R = require('ramda');
 
 describe('filtering ', () => {
   it('should return all data for no filter', () => {
@@ -43,5 +44,12 @@ describe('filtering ', () => {
     const result = clubs.get({ stars });
     expect(result.length).toBeGreaterThan(30);
     result.forEach(club => expect(club.stars).toEqual(stars));
+  });
+
+  it('should use search', () => {
+    const limit = 10;
+    const result = clubs.get({ search: 'Braga', limit, debug: 1 });
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ name: 'SC Braga', id: '166' });
   });
 });
