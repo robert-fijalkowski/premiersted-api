@@ -5,7 +5,7 @@ const { data } = clubs;
 const chance = require('chance')();
 const R = require('ramda');
 
-describe('filtering ', () => {
+describe('clubs service', () => {
   it('should return all data for no filter', () => {
     expect(clubs.get()).toEqual(data);
   });
@@ -48,10 +48,11 @@ describe('filtering ', () => {
   });
 
   it('should use search', () => {
-    const limit = 3;
-    const result = clubs.get({ search: 'Madrid,Bari', limit, debug: 1 });
-    console.log(result);
-    // expect(result).toHaveLength(1);
-    // expect(result[0]).toMatchObject({ name: 'SC Braga', id: '166' });
+    const limit = 10;
+    const result = clubs.get({
+      search: 'Braga', limit, atLeast: 'good',
+    });
+    expect(result.length).toBeLessThanOrEqual(10);
+    expect(result[0]).toMatchObject({ name: 'SC Braga', id: '166' });
   });
 });
