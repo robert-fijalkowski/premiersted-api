@@ -37,32 +37,76 @@ const useAllKeysToFilter = (query) => {
 };
 
 const distancator = R.curry(require('talisman/metrics/distance/jaro'));
+const fingerprint = require('talisman/keyers/fingerprint');
 
+const percentile = R.curry((nth, set) => {
+  const index = R.pipe(
+    R.length,
+    R.multiply(nth),
+    Math.floor,
+    R.prop(R.__, set),
+  );
+  return index(set);
+});
 const searchBy = ({ search, limit = 10, debug }) => {
-  const conditions = search.split(',').map(R.pipe(R.trim, R.replace(/ /g, ''), R.toLower));
+  const rawConfidtionsCount = search.split(',').length;
+  const conditions = R.pipe(
+    R.split(','),
+    R.map(q => [q, q.replace(/ /g, '')]),
+    R.flatten,
+    R.map(fingerprint),
+  )(search);
   const matchers = R.map(distancator)(conditions);
-  const sortNumbersAsc = R.sortWith([R.ascend(R.identity)]);
+  const sortNumbersDesc = R.sortWith([R.descend(R.identity)]);
   const distance = R.map(R.pipe(
-    R.split(' '), R.filter(f => f.length >= 3), R.join(' '), R.toLower, R.of,
+    R.split(' '), R.filter(R.pipe(R.length, R.lte(3))), R.map(fingerprint),
     R.xprod(matchers, R.__),
     R.pipe(R.map(([c, a]) => c(a))),
   ));
-  const buildIndex = R.pipe(R.values, R.flatten, sortNumbersAsc, R.reduce(R.max, []));
-  const h = R.map(o => ({
+  const subIndex = R.pipe(sortNumbersDesc, R.take(rawConfidtionsCount), R.sum);
+  const buildIndex = R.pipe(
+    R.values,
+    R.map(subIndex),
+    R.flatten, subIndex,
+  );
+  const indexate = R.map(o => ({
     ...o,
     index: R.pipe(
       R.pickAll(['name', 'division']),
+      ({ name, division }) => ([name, name.replace(/ /g, ''), division.replace(/ /g, '')]),
       R.pipe(distance, buildIndex),
     )(o),
   }));
-  const q = R.pipe(
-    h,
+  return R.pipe(
+    indexate,
     R.sortBy(R.pipe(R.prop('index'), R.negate)),
-    R.take(limit),
-    R.filter(R.pipe(R.prop('index'), R.lte(0.75))),
-    R.ifElse(R.always(debug), R.identity, R.map(R.omit(['index']))),
+    R.pipe((indexed) => {
+      const indexes = R.pluck('index', indexed);
+      const [head, last] = [R.head, R.last].map(a => a(indexes));
+      const normalize = i => (i - last) / (head - last);
+      const [excellent, good, average, fair, poor] =
+        [0.00, 0.01, 0.02, 0.03, 0.1]
+          .map(v => normalize(percentile(v, indexes)));
+      return R.map(club => ({
+        ...club,
+        index: normalize(club.index),
+        ...R.cond([
+          [R.lte(excellent), R.always({ quality: 'excellent' })],
+          [R.lte(good), R.always({ quality: 'good' })],
+          [R.lte(average), R.always({ quality: 'average' })],
+          [R.lte(fair), R.always({ quality: 'fair' })],
+          [R.lte(poor), R.always({ quality: 'poor' })],
+        ])(normalize(club.index)),
+      }))(R.take(limit, indexed));
+    }),
+    R.ifElse(
+      R.always(debug), R.identity,
+      R.pipe(
+        R.filter(R.pipe(R.prop('index'), R.lte(0.75))),
+        R.map(R.omit(['index'])),
+      ),
+    ),
   );
-  return q;
 };
 
 const nConditions = n => R.pipe(R.values, R.length, R.equals(n));
