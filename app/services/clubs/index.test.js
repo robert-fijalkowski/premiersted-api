@@ -1,17 +1,17 @@
 /* eslint-env jest,node */
 const clubs = require('./index');
 
-const { data } = clubs;
+const { data } = require('./data');
 const chance = require('chance')();
 const R = require('ramda');
 
 describe('clubs service', () => {
   it('should return all data for no filter', () => {
-    expect(clubs.get()).toEqual(data);
+    expect(clubs.get()).toEqual(R.map(e => ({ ...e, keywords: undefined }), data));
   });
   it('should return sample basing on id', () => {
     const sample = chance.pickone(data);
-    expect(clubs.get({ id: sample.id })).toEqual(sample);
+    expect(clubs.get({ id: sample.id })).toEqual({ ...sample, keywords: undefined });
   });
   it('should return all related sample basing on division', () => {
     const sample = chance.pickone(data);
@@ -32,7 +32,7 @@ describe('clubs service', () => {
     const { name } = sample;
     const result = clubs.get({ name });
     expect(result).toHaveLength(1);
-    expect(result[0]).toMatchObject(sample);
+    expect(result[0]).toMatchObject(R.omit(['keywords'], sample));
   });
   it('should be threat as search', () => {
     const name = 'Madrid';
