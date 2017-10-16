@@ -6,7 +6,7 @@ const fingerprint = require('talisman/keyers/fingerprint');
 const memo = R.memoizeWith((a, b) => a + b, (a, b) => distancator(a, b));
 const dct = a => b => memo(a, b);
 
-const prepareNames = R.pipe(R.map(R.pipe(
+const synthetizeWords = R.pipe(R.map(R.pipe(
   R.toLower,
   n => [n, n.replace('ch', 'cz'), n.replace('sea', 'si'), n.replace('sea', 'si').replace('ch', 'cz')],
   R.map(n => [n, n.replace(/ /g, '')]),
@@ -68,7 +68,8 @@ module.exports = ({
     ...o,
     index: R.pipe(
       R.pickAll(['name', 'division', 'keywords']),
-      ({ name, division, keywords }) => ([...keywords, ...prepareNames([name, division])]),
+      ({ name, division, keywords }) =>
+        ([...synthetizeWords([...keywords, name, division])]),
       R.pipe(distance, buildIndex),
     )(o),
   }));
