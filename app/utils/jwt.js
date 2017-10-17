@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
-
 const config = require('../config')();
+
 const {
-  user, level,
-} = require('./db');
+  users, level,
+} = {};
 
 const template = token => `
   <html>
@@ -49,7 +49,7 @@ const protectLevel = requestedLevel => (req, res, next) => {
   protect(req, res, () => {
     user.getLevel(req.user.id)
       .then((userLevel) => {
-        if (level.isAtLeast(userLevel, requestedLevel)) {
+        if (level.atLeast(userLevel, requestedLevel)) {
           next();
         } else {
           res.status(401).send(`Unauthorized: insufficient permissions ${userLevel}, needs ${requestedLevel}`);

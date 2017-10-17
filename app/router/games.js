@@ -17,13 +17,16 @@ app.post('/:id', async (req, res) => {
   }));
 });
 
-app.delete('/:id', async (req, res) => {
-  res.json(await games.delete(req.params));
+app.delete('/:id', (req, res) => {
+  res.handle(games.delete(req.params));
 });
 
 app.post('/:id/competitors', async (req, res) => {
   await games.addCompetitor(req.params.id, req.body);
-  res.json(await games.get({ id: req.params.id }));
+  res.handle(games.get({ id: req.params.id }));
+});
+app.get('/:id/schedule', async (req, res) => {
+  res.json(await games.schedule({ gid: req.params.id }));
 });
 app.post('/', async (req, res) => {
   res.json(await games.create(req.body));

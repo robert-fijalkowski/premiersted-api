@@ -1,12 +1,10 @@
 const R = require('ramda');
-const randomatic = require('randomatic');
 
 module.exports = dbP => ({
   async create({
-    gid, home, away, ...meta
+    gid, home, id, away, ...meta
   }) {
     const db = await dbP;
-    const id = randomatic('Aa0', 6);
     await db.execute(
       `INSERT INTO contests(id,home,away,gid,status,meta) values 
       (:id,:home,:away,:gid,'SCHEDULED',:meta)`,

@@ -1,10 +1,15 @@
+require('./utils/rambda.extension');
+
 const express = require('express');
+const bodyParser = require('body-parser');
 const config = require('./config')();
 const github = require('./utils/github');
-const bodyParser = require('body-parser');
+const cors = require('./utils/cors');
+
 
 const app = express();
 app.use(bodyParser.json());
+cors(app);
 app.use('/_github', github);
 require('./router')(app);
 

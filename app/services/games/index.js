@@ -1,6 +1,7 @@
 const {
   games, competitors, contests,
 } = require('../../db');
+const randomatic = require('randomatic');
 
 const clubs = require('../clubs');
 const users = require('../users');
@@ -12,29 +13,28 @@ const detailedGame = async ({ id }) => {
   if (!game) {
     return null;
   }
-  const c = await competitors.find({ gid: id });
+  const listOfCompetitors = await competitors.find({ gid: id });
   const competitor = R.groupBy(
     R.prop('id'),
     await Promise.all(R.map(
       ({ uid }) => users.cachedFind({ id: uid }),
-      c,
+      listOfCompetitors,
     )),
   );
-  const competitorList = R.fromPairs(R.map(
-    R.pipe(R.omit(['gid']), ({ club, uid }) => [uid, {
+  const competitorList = R.mapTo(R.path(['user', 'id']), R.identity, R.map(
+    R.pipe(R.omit(['gid']), ({ club, uid }) => ({
       club: clubs.get({ id: club }),
       user: competitor[uid][0],
-    }]),
-    c,
+    })),
+    listOfCompetitors,
   ));
-
-  // club: R.pipe(R.assoc('id', R.__, {}), clubs.get),
 
   return {
     ...game,
     competitors: competitorList,
   };
 };
+const schedule = require('./schedule');
 
 const deleteGame = async ({ id }) => {
   await Promise.all([
@@ -71,12 +71,6 @@ module.exports = {
   async update(o) {
     return games.update(o).then(({ id }) => this.get({ id }));
   },
-  async schedule({ gid }) {
-    const gamePlayers = await competitors.find({ gid });
-    const matches = R.pipe(
-      R.filter(([left, right]) => left.uid !== right.uid),
-      R.uniq,
-    )(R.xprod(gamePlayers, gamePlayers));
-  },
+  ...schedule,
 };
 
