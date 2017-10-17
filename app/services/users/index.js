@@ -9,6 +9,15 @@ const cache = LRU({
   maxAge: 1000 * 60, max: 100,
 });
 
+cache.getOrSet = async (key, dataP) => {
+  let val = cache.get(key);
+  if (!val) {
+    val = await dataP(key);
+    cache.set(key, val);
+  }
+  return val;
+};
+
 const userDetails = async ({ id }) => {
   const user = await users.findById(id);
   const gamesIdsList = R.map(R.prop('gid'))(await competitors.find({ uid: user.id }));
@@ -20,7 +29,10 @@ const userDetails = async ({ id }) => {
 
 module.exports = {
   async cachedFind({ id }) {
-    return userDetails(id);
+    return cache.getOrSet(id, async () => {
+      const { meta: { avatar_url, name } } = await users.findById(id, ['users']);
+      return { name, id, avatar_url };
+    });
   },
   async get(q) {
     return R.cond([

@@ -20,5 +20,5 @@ const addStars = R.map(o => ({
 const data = addStars(rawData);
 const basicProps = R.keys(data[0]);
 
-module.exports = { data, basicProps, rawData }
-;
+module.exports = { data, basicProps, rawData };
+

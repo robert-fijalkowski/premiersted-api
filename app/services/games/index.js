@@ -3,6 +3,7 @@ const {
 } = require('../../db');
 
 const clubs = require('../clubs');
+const users = require('../users');
 
 const R = require('ramda');
 
@@ -11,13 +12,27 @@ const detailedGame = async ({ id }) => {
   if (!game) {
     return null;
   }
-  const comps = R.map(R.evolve({
-    club: R.pipe(R.assoc('id', R.__, {}), clubs.get),
-    gid: R.none,
-  }))(await competitors.find({ gid: id }));
+  const c = await competitors.find({ gid: id });
+  const competitor = R.groupBy(
+    R.prop('id'),
+    await Promise.all(R.map(
+      ({ uid }) => users.cachedFind({ id: uid }),
+      c,
+    )),
+  );
+  const competitorList = R.fromPairs(R.map(
+    R.pipe(R.omit(['gid']), ({ club, uid }) => [uid, {
+      club: clubs.get({ id: club }),
+      user: competitor[uid][0],
+    }]),
+    c,
+  ));
+
+  // club: R.pipe(R.assoc('id', R.__, {}), clubs.get),
+
   return {
     ...game,
-    competitors: comps,
+    competitors: competitorList,
   };
 };
 

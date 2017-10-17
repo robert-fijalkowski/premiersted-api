@@ -37,4 +37,13 @@ module.exports = {
       R.omit(['keywords']),
     )(results);
   },
+  listOf({ type }, dataSet = data) {
+    const allowedQueries = ['country', 'division'];
+    const prop = R.head(R.intersection(R.of(type), allowedQueries));
+    return R.pipe(
+      R.pluck(prop),
+      R.uniq, R.filter(R.complement(R.isNil)),
+      R.sortWith([R.ascend(R.identity)]),
+    )(dataSet);
+  },
 };
