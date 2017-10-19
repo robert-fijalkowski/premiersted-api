@@ -24,7 +24,7 @@ const supplyNewFields = matches => R.map((match) => {
 }, matches);
 
 module.exports = {
-  async schedule({ gid }) {
+  async prepareSchedule({ gid }) {
     const gamePlayers = R.pluck('uid', await competitors.find({ gid }));
     const newId = () => randomatic('Aa0', 6);
     return R.pipe(
@@ -33,6 +33,9 @@ module.exports = {
       R.map(([home, away]) => ({ id: newId(), home, away })),
       supplyNewFields,
     )(R.xprod(gamePlayers, gamePlayers));
+  },
+  saveSchedule({ gid, schedule }) {
+
   },
 };
 

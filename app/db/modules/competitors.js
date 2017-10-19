@@ -3,15 +3,11 @@ const R = require('ramda');
 const numberOfQueries = n => R.pipe(R.values, R.length, R.equals(n));
 
 module.exports = dbP => ({
-  async add({
-    gid, uid, club,
-  }) {
+  async add({ gid, uid, club }) {
     const db = await dbP;
-    await db.execute(
+    await db.query(
       'INSERT INTO competitors(gid,uid,club) values (:gid, :uid,:club)',
-      {
-        gid, uid, club,
-      },
+      { gid, uid, club },
     );
   },
   async find(query = {}) {
@@ -40,13 +36,13 @@ module.exports = dbP => ({
   },
   async migrate() {
     const db = await dbP;
-    await db.execute('CREATE TABLE `competitors` ( `gid` VARCHAR(32) NOT NULL , `uid` VARCHAR(32) NOT NULL , `club` INT NOT NULL ) ENGINE = InnoDB;');
-    await db.execute('ALTER TABLE `competitors` ADD PRIMARY KEY (`gid`,`uid`), ADD KEY `gid` (`gid`), ADD KEY `uid` (`uid`);');
-    await db.execute('ALTER TABLE `competitors` CHANGE `club` `club` VARCHAR(5) NOT NULL;');
+    await db.query('CREATE TABLE `competitors` ( `gid` VARCHAR(32) NOT NULL , `uid` VARCHAR(32) NOT NULL , `club` INT NOT NULL ) ENGINE = InnoDB;');
+    await db.query('ALTER TABLE `competitors` ADD PRIMARY KEY (`gid`,`uid`), ADD KEY `gid` (`gid`), ADD KEY `uid` (`uid`);');
+    await db.query('ALTER TABLE `competitors` CHANGE `club` `club` VARCHAR(5) NOT NULL;');
   },
   async drop() {
     const db = await dbP;
-    return db.execute('DROP TABLE `competitors`;');
+    return db.query('DROP TABLE `competitors`;');
   },
 });
 

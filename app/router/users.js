@@ -1,18 +1,20 @@
-const db = require('../db');
 const app = require('express')();
 
 const { users } = require('../services');
+const { protectLevel } = require('../utils/jwt');
 
-app.get('/', async (req, res) => {
-  res.json(await users.get());
+const onlyAdmin = protectLevel('ADMIN');
+
+app.get('/', (req, res) => {
+  res.handle(users.get());
 });
 
-app.get('/:id', async (req, res) => {
-  res.json(await users.get(req.params));
+app.get('/:id', (req, res) => {
+  res.handle(users.get(req.params));
 });
 
-app.post('/:id', async (req, res) => {
-  res.json(await users.update({
+app.post('/:id', onlyAdmin, (req, res) => {
+  res.handle(users.update({
     body: req.body, id: req.params.id,
   }));
 });

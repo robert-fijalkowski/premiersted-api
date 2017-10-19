@@ -22,7 +22,7 @@ describe('Connect to db', () => {
   });
   it('should create connection', async () => {
     const db = await conn(config());
-    const [result] = await db.execute('SELECT 1+1 as res;');
+    const [result] = await db.query('SELECT 1+1 as res;');
     expect(result[0].res).toBe(2);
     await db.end();
   });

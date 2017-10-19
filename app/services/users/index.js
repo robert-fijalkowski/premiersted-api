@@ -1,25 +1,13 @@
-const {
-  users, competitors, games,
-} = require('../../db');
+const { users, competitors, games } = require('../../db');
 
-const LRU = require('lru-cache');
+const Cache = require('../../utils/cache');
 const R = require('ramda');
 
-const cache = LRU({
-  maxAge: 1000 * 60, max: 100,
-});
-
-cache.getOrSet = async (key, dataP) => {
-  let val = cache.get(key);
-  if (!val) {
-    val = await dataP(key);
-    cache.set(key, val);
-  }
-  return val;
-};
+const cache = Cache({ maxAge: 1000 * 60, max: 100 });
 
 const userDetails = async ({ id }) => {
   const user = await users.findById(id);
+  if (!user) return null;
   const gamesIdsList = R.map(R.prop('gid'))(await competitors.find({ uid: user.id }));
   const gamesList = await games.teasers(gamesIdsList);
   return {
@@ -40,9 +28,10 @@ module.exports = {
       [R.T, async () => users.getAll()],
     ])(q);
   },
-  async update({
-    id, body,
-  }) {
+  async getAccess({ id }) {
+    return users.getAccess(id);
+  },
+  async update({ id, body }) {
     await Promise.all([
       users.updateMeta({
         ...body, id,

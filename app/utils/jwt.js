@@ -1,9 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config')();
 
-const {
-  users, level,
-} = {};
+const { users, level } = require('../services');
 
 const template = token => `
   <html>
@@ -32,11 +30,12 @@ const auth = (req, res) => {
 const protect = (req, res, next) => {
   const token = req.headers['auth-token'];
   if (token) {
-    jwt.verify(token, config.secret, config.opt, (err, decoded) => {
+    jwt.verify(token, config.get('JWT_SECRET'), {}, (err, decoded) => {
       if (err) {
         res.status(401).send(`Unauthorized: ${err.message}`);
         return;
       }
+      console.log(decoded);
       req.user = decoded;
       next();
     });
@@ -47,12 +46,12 @@ const protect = (req, res, next) => {
 
 const protectLevel = requestedLevel => (req, res, next) => {
   protect(req, res, () => {
-    user.getLevel(req.user.id)
+    users.getAccess(req.user)
       .then((userLevel) => {
         if (level.atLeast(userLevel, requestedLevel)) {
           next();
         } else {
-          res.status(401).send(`Unauthorized: insufficient permissions ${userLevel}, needs ${requestedLevel}`);
+          res.status(403).send(`Forbidden: insufficient permissions ${userLevel}, needs ${requestedLevel}`);
         }
       })
       .catch((e) => {

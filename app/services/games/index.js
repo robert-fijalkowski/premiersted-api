@@ -5,6 +5,7 @@ const randomatic = require('randomatic');
 
 const clubs = require('../clubs');
 const users = require('../users');
+const schedule = require('./schedule');
 
 const R = require('ramda');
 
@@ -28,13 +29,13 @@ const detailedGame = async ({ id }) => {
     })),
     listOfCompetitors,
   ));
-
+  const plannedSchedule = await schedule.prepareSchedule({ gid: id });
   return {
     ...game,
     competitors: competitorList,
+    schedule: plannedSchedule,
   };
 };
-const schedule = require('./schedule');
 
 const deleteGame = async ({ id }) => {
   await Promise.all([
@@ -45,6 +46,9 @@ const deleteGame = async ({ id }) => {
   return {};
 };
 module.exports = {
+  async exists(id) {
+    return !!games.findById(id);
+  },
   get(o) {
     return R.cond([
       [R.prop('id'), detailedGame],
@@ -58,12 +62,9 @@ module.exports = {
       [R.T, R.always({})],
     ])(o);
   },
-  async addCompetitor(id, {
-    uid, club,
-  }) {
-    competitors.add({
-      gid: id, uid, club,
-    });
+  async addCompetitor(id, { uid, club }) {
+    throw new Error('Fa');
+    return competitors.add({ gid: id, uid, club });
   },
   async create(o) {
     return games.create(o);

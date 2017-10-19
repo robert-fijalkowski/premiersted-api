@@ -5,7 +5,7 @@ module.exports = dbP => ({
     gid, home, id, away, ...meta
   }) {
     const db = await dbP;
-    await db.execute(
+    await db.query(
       `INSERT INTO contests(id,home,away,gid,status,meta) values 
       (:id,:home,:away,:gid,'SCHEDULED',:meta)`,
       {
@@ -19,7 +19,7 @@ module.exports = dbP => ({
     const where = (sql, substs) => db.query(`SELECT * FROM contests WHERE ${sql}`, substs).then(R.prop(0));
 
     const exactMatch = R.both(paramsCount(1), R.prop('id'));
-    const validCompetors = R.both(paramsCount(2), R.anyPass(R.prop('home'), R.prop('away')));
+    const validCompetitors = R.both(paramsCount(2), R.anyPass(R.prop('home'), R.prop('away')));
     const allGameMatches = R.both(paramsCount(1), R.prop('gid'));
     return R.cond([
       [exactMatch, async ({ id }) => where('id = ?', [id])],
@@ -32,11 +32,11 @@ module.exports = dbP => ({
   },
   async migrate() {
     const db = await dbP;
-    await db.execute("CREATE TABLE `contests` ( `id` VARCHAR(32) NOT NULL , `home` VARCHAR(32) NOT NULL ,`away` VARCHAR(32) NOT NULL , `gid` VARCHAR(32) NOT NULL ,`status` ENUM('SCHEDULED','PLAYED','WALKOVER') NOT NULL,`updated` TIMESTAMP NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`), INDEX (`home`),INDEX(`away`), INDEX (`gid`)) ENGINE = InnoDB;");
+    await db.query("CREATE TABLE `contests` ( `id` VARCHAR(32) NOT NULL , `home` VARCHAR(32) NOT NULL ,`away` VARCHAR(32) NOT NULL , `gid` VARCHAR(32) NOT NULL ,`status` ENUM('SCHEDULED','PLAYED','WALKOVER') NOT NULL,`updated` TIMESTAMP NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`), INDEX (`home`),INDEX(`away`), INDEX (`gid`)) ENGINE = InnoDB;");
   },
   async drop() {
     const db = await dbP;
-    return db.execute('DROP TABLE `contests`;');
+    return db.query('DROP TABLE `contests`;');
   },
 });
 

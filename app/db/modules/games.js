@@ -11,7 +11,7 @@ module.exports = dbP => ({
   }) {
     const db = await dbP;
     const newId = randomatic('Aa0', 5);
-    await db.execute(
+    await db.query(
       'INSERT INTO games(id, name, location, status, meta) values (?,?,?,?,?)',
       [newId, name, location, 'OPEN', JSON.stringify({
         ...meta, created: new Date().toUTCString(),
@@ -26,7 +26,7 @@ module.exports = dbP => ({
   },
   async findById(id) {
     const db = await dbP;
-    const [[game]] = await db.execute('SELECT * FROM games WHERE id = ?', [id]);
+    const [[game]] = await db.query('SELECT * FROM games WHERE id = ?', [id]);
     if (!game) {
       return null;
     }
@@ -34,12 +34,12 @@ module.exports = dbP => ({
   },
   async getAll() {
     const db = await dbP;
-    const [games] = await db.execute('SELECT * FROM games');
+    const [games] = await db.query('SELECT * FROM games');
     return R.pipe(R.map(decodeGame))(games);
   },
   async delete(id) {
     const db = await dbP;
-    await db.execute('DELETE FROM games WHERE id = ?', [id]);
+    await db.query('DELETE FROM games WHERE id = ?', [id]);
     return {};
   },
   async findBy(by = {}) {
@@ -63,7 +63,7 @@ module.exports = dbP => ({
     id, name, status, location, ...meta
   }) {
     const db = await dbP;
-    return db.execute(
+    return db.query(
       'UPDATE games SET name=:name, status=:status, location=:location, meta=:meta WHERE id = :id',
       {
         name, status, location, meta: JSON.stringify(meta), id,
@@ -72,11 +72,11 @@ module.exports = dbP => ({
   },
   async migrate() {
     const db = await dbP;
-    return db.execute("CREATE TABLE `games` ( `id` VARCHAR(32) NOT NULL , `name` VARCHAR(64) NOT NULL , `location` VARCHAR(64) NOT NULL , `status` ENUM('OPEN','ONGOING','EXPIRED','CANCELLED') NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
+    return db.query("CREATE TABLE `games` ( `id` VARCHAR(32) NOT NULL , `name` VARCHAR(64) NOT NULL , `location` VARCHAR(64) NOT NULL , `status` ENUM('OPEN','ONGOING','EXPIRED','CANCELLED') NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
   },
   async drop() {
     const db = await dbP;
-    return db.execute('DROP TABLE `games`');
+    return db.query('DROP TABLE `games`');
   },
 });
 
