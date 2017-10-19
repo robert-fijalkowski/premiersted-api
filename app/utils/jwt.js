@@ -35,7 +35,6 @@ const protect = (req, res, next) => {
         res.status(401).send(`Unauthorized: ${err.message}`);
         return;
       }
-      console.log(decoded);
       req.user = decoded;
       next();
     });

@@ -63,14 +63,13 @@ module.exports = {
     ])(o);
   },
   async addCompetitor(id, { uid, club }) {
-    throw new Error('Fa');
-    return competitors.add({ gid: id, uid, club });
+    return competitors.add({ gid: id, uid, club }).then(() => detailedGame({ id }));
   },
   async create(o) {
     return games.create(o);
   },
   async update(o) {
-    return games.update(o).then(({ id }) => this.get({ id }));
+    return games.update(o).then(() => detailedGame({ id: o.id }));
   },
   ...schedule,
 };
