@@ -1,8 +1,7 @@
-const {
-  games, competitors, contests,
-} = require('../../db');
+const { games, competitors, contests } = require('../../db');
 const randomatic = require('randomatic');
 
+const rules = require('./rules');
 const clubs = require('../clubs');
 const users = require('../users');
 const schedule = require('./schedule');
@@ -47,7 +46,7 @@ const deleteGame = async ({ id }) => {
 };
 module.exports = {
   async exists(id) {
-    return !!games.findById(id);
+    return !!await games.findById(id);
   },
   get(o) {
     return R.cond([
@@ -62,14 +61,19 @@ module.exports = {
       [R.T, R.always({})],
     ])(o);
   },
-  async addCompetitor(id, { uid, club }) {
-    return competitors.add({ gid: id, uid, club }).then(() => detailedGame({ id }));
+  async addCompetitor(gid, { uid, club }) {
+    await rules.addCompetitor({ gid, club });
+    return competitors.add({ gid, uid, club }).then(() => detailedGame({ gid }));
+  },
+  async delCompetitor(gid, { uid, club }) {
+    return competitors.delete({ gid, uid, club }).then(() => detailedGame({ gid }));
   },
   async create(o) {
     return games.create(o);
   },
   async update(o) {
-    return games.update(o).then(() => detailedGame({ id: o.id }));
+    const filteredFields = R.omit(['competitors', 'schedule'], o);
+    return games.update(filteredFields).then(() => detailedGame({ id: o.id }));
   },
   ...schedule,
 };

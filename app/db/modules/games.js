@@ -21,14 +21,14 @@ module.exports = dbP => ({
   },
   async teasers(ids) {
     const db = await dbP;
-    const games = await Promise.all(ids.map(id => db.query('SELECT name,status FROM games WHERE id =?', [id]).then(R.prop(0))));
+    const games = await Promise.all(ids.map(id => db.query('SELECT name,status,location FROM games WHERE id =?', [id]).then(R.prop(0))));
     return R.reduce(R.concat, [], games);
   },
   async findById(id) {
     const db = await dbP;
     const [[game]] = await db.query('SELECT * FROM games WHERE id = ?', [id]);
     if (!game) {
-      return null;
+      return false;
     }
     return decodeGame(game);
   },

@@ -20,19 +20,18 @@ const uids = chance.n(() => `github:${chance.natural({
   min: 100000, max: 2000000,
 })}`, 5);
 
-describe('games management', () => {
+describe('competitors management', () => {
   it('stub db', async () => {
     await competitors.migrate();
   });
   it('feed db', async () => {
+    let aClub = 0;
     const samples = R.pipe(
       R.xprod,
       R.map(([gid, uid]) => ({
         gid,
         uid,
-        club: chance.natural({
-          min: 1, max: 500,
-        }),
+        club: aClub++, // eslint-disable-line
       })),
       R.reduce(R.concat, R.__, []),
     )(gids, uids);
@@ -56,41 +55,39 @@ describe('games management', () => {
     });
   });
 
+  it('can fetch only for particular club id', async () => {
+    const club = '1';
+    const [relatedToClub] = await competitors.find({ club });
+    const list = await competitors.find({ club, gid: relatedToClub.gid });
+    expect(list).toHaveLength(1);
+    list.forEach((competitor) => {
+      expect(competitor).toMatchObject({ club, gid: relatedToClub.gid, ...relatedToClub });
+    });
+  });
+
   it('can fetch only one entry', async () => {
     const uid = chance.pickone(uids);
     const gid = chance.pickone(gids);
 
-    const list = await competitors.find({
-      uid, gid,
-    });
+    const list = await competitors.find({ uid, gid });
     expect(list).toHaveLength(1);
-    expect(list[0]).toMatchObject({
-      uid, gid,
-    });
+    expect(list[0]).toMatchObject({ uid, gid });
   });
 
   it('can delete one entry', async () => {
     const uid = chance.pickone(uids);
     const gid = chance.pickone(gids);
 
-    const list = await competitors.delete({
-      uid, gid,
-    }).then(() => competitors.find({
-      uid, gid,
-    }));
+    await competitors.delete({ uid, gid });
+    const list = await competitors.find({ uid, gid });
     expect(list).toHaveLength(0);
   });
 
-  it('can delete entry basing on gid/uid', async () => {
-    const gid = chance.pickone(gids);
-
-    const list = await competitors.delete({ gid }).then(() => competitors.find({ gid }));
-    expect(list).toHaveLength(0);
-  });
-  it('should return empty array for no queries', async () => {
+  it('should return no records for empty query', async () => {
     const list = await competitors.find({ });
     expect(list).toHaveLength(0);
   });
+
   it('drop db', async () => {
     await competitors.drop();
     (await conn(config())).end();
