@@ -8,12 +8,12 @@ const schedule = require('./schedule');
 
 const R = require('ramda');
 
-const detailedGame = async ({ id }) => {
-  const game = await games.findById(id);
+const detailedGame = async ({ gid }) => {
+  const game = await games.findById(gid);
   if (!game) {
     return null;
   }
-  const listOfCompetitors = await competitors.find({ gid: id });
+  const listOfCompetitors = await competitors.find({ gid });
   const competitor = R.groupBy(
     R.prop('id'),
     await Promise.all(R.map(
@@ -28,7 +28,7 @@ const detailedGame = async ({ id }) => {
     })),
     listOfCompetitors,
   ));
-  const plannedSchedule = await schedule.prepareSchedule({ gid: id });
+  const plannedSchedule = await schedule.prepareSchedule({ gid });
   return {
     ...game,
     competitors: competitorList,
@@ -50,7 +50,7 @@ module.exports = {
   },
   get(o) {
     return R.cond([
-      [R.prop('id'), detailedGame],
+      [R.prop('gid'), detailedGame],
       [R.anyPass([R.prop('limit'), R.prop('name'), R.prop('status'), R.prop('location')]), async by => games.findBy(by)],
       [R.T, async () => games.getAll()],
     ])(o);
@@ -62,7 +62,7 @@ module.exports = {
     ])(o);
   },
   async addCompetitor(gid, { uid, club }) {
-    await rules.addCompetitor({ gid, club });
+    console.log('comp?', await rules.addCompetitor({ gid, uid, club }));
     return competitors.add({ gid, uid, club }).then(() => detailedGame({ gid }));
   },
   async delCompetitor(gid, { uid, club }) {
@@ -73,7 +73,7 @@ module.exports = {
   },
   async update(o) {
     const filteredFields = R.omit(['competitors', 'schedule'], o);
-    return games.update(filteredFields).then(() => detailedGame({ id: o.id }));
+    return games.update(filteredFields).then(() => detailedGame({ gid: o.id }));
   },
   ...schedule,
 };

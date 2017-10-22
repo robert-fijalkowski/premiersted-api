@@ -20,14 +20,14 @@ app.get('/', async (req, res) => {
 app.get(
   '/:id', gameExists,
   (req, res) => {
-    res.handle(() => games.get({ id: req.params.id }));
+    res.handle(() => games.get({ gid: req.params.id }));
   },
 );
 
 app.post(
   '/:id', onlyAdmin, gameExists,
   async (req, res) => {
-    const game = await games.get(req.params);
+    const game = await games.get({ gid: req.params.id });
     res.handle(await games.update({
       ...game,
       ...req.body,
