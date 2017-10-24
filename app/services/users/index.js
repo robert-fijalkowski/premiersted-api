@@ -1,4 +1,6 @@
-const { users, competitors, games } = require('../../db');
+const {
+  users, competitors, games, contests,
+} = require('../../db');
 
 const Cache = require('../../utils/cache');
 const R = require('ramda');
@@ -9,9 +11,13 @@ const userDetails = async ({ id }) => {
   const user = await users.findById(id);
   if (!user) return null;
   const gamesIdsList = R.map(R.prop('gid'))(await competitors.find({ uid: user.id }));
-  const gamesList = await games.teasers(gamesIdsList);
+  const [contestsList, gamesList] =
+  await Promise.all([
+      contests.find({ uid: id }),
+      games.teasers(gamesIdsList),
+    ]);
   return {
-    ...user, games: gamesList,
+    ...user, games: gamesList, contests: contestsList,
   };
 };
 

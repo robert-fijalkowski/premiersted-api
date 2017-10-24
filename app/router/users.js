@@ -1,15 +1,15 @@
 const app = require('express')();
 
 const { users } = require('../services');
-const { protectLevel } = require('../utils/jwt');
+const { protectLevel, protect } = require('../utils/jwt');
 
 const onlyAdmin = protectLevel('ADMIN');
 
-app.get('/', (req, res) => {
+app.get('/', protect, (req, res) => {
   res.handle(users.get());
 });
 
-app.get('/:id', (req, res) => {
+app.get('/:id', protect, (req, res) => {
   res.handle(users.get(req.params));
 });
 

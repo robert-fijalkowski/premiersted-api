@@ -67,6 +67,12 @@ app.get(
     res.handle(games.prepareSchedule({ gid: req.params.id }));
   },
 );
+app.post(
+  '/:id/schedule', onlyAdmin, gameExists,
+  (req, res) => {
+    res.handle(games.makeSchedule({ gid: req.params.id }));
+  },
+);
 
 app.post(
   '/', requiredProps('name', 'location'), onlyAdmin,

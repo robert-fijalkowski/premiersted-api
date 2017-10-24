@@ -16,7 +16,7 @@ module.exports = dbP => ({
       .reduce(([query, values], [field, value]) =>
         [[...query, genericFind(field)], [...values, value]], [[], []]);
     return R.cond([
-      [R.isEmpty, R.always()],
+      [R.isEmpty, R.always([])],
       [R.T, () => db.query(`SELECT * FROM competitors WHERE ${sql.join(' AND ')}`, injects).then(R.head)],
     ])(injects);
   },

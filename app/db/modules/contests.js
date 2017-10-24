@@ -1,38 +1,72 @@
 const R = require('ramda');
 
+const decodeContest = contest => ({
+  ...contest, meta: undefined, ...JSON.parse(contest.meta),
+});
+const prepareConditions = (params) => {
+  const genericFind = field => `${field} = ?`;
+
+  const [sql, injects] = R.toPairs(params)
+    .filter(([key]) => key !== 'uid')
+    .reduce(([query, values], [field, value]) =>
+      [[...query, genericFind(field)], [...values, value]], [[], []]);
+  if (R.prop('uid', params)) {
+    const uid = R.prop('uid', params);
+    sql.push('(visitor = ? OR home = ?)');
+    injects.push(uid, uid);
+  }
+  return [sql, injects];
+};
+
 module.exports = dbP => ({
   async create({
-    gid, home, id, away, ...meta
+    id, gid, home, visitor, ...meta
   }) {
     const db = await dbP;
     await db.query(
-      `INSERT INTO contests(id,home,away,gid,status,meta) values 
-      (:id,:home,:away,:gid,'SCHEDULED',:meta)`,
+      `INSERT INTO contests(id,home,visitor,gid,status,meta) values 
+      (:id,:home,:visitor,:gid,'SCHEDULED',:meta)`,
       {
-        id, home, away, gid, meta: JSON.stringify(meta),
+        id, home, visitor, gid, meta: JSON.stringify(meta),
       },
     );
   },
-  async find(query = {}) {
+  async findById({ id }) {
     const db = await dbP;
-    const paramsCount = n => R.pipe(R.values, R.length, R.equals(n));
-    const where = (sql, substs) => db.query(`SELECT * FROM contests WHERE ${sql}`, substs).then(R.prop(0));
-
-    const exactMatch = R.both(paramsCount(1), R.prop('id'));
-    const validCompetitors = R.both(paramsCount(2), R.anyPass(R.prop('home'), R.prop('away')));
-    const allGameMatches = R.both(paramsCount(1), R.prop('gid'));
-    return R.cond([
-      [exactMatch, async ({ id }) => where('id = ?', [id])],
-      [R.T, R.always([])],
-    ])(query);
+    const [[contest]] = await db.query('SELECT * FROM contests WHERE id = :id LIMIT 1', { id });
+    if (!contest) {
+      return null;
+    }
+    return decodeContest(contest);
   },
-  async delete() {
+
+  async find(params = {}) {
     const db = await dbP;
-    return {};
+    const [sql, injects] = prepareConditions(params);
+    const results = await R.cond([
+      [R.isEmpty, R.always([])],
+      [R.T, () => db.query(`SELECT * FROM contests WHERE ${sql.join(' AND ')}`, injects)],
+    ])(injects);
+    return R.pipe(R.head, R.map(decodeContest))(results);
+  },
+  async update({
+    id, name, status, ...meta
+  }) {
+    const db = await dbP;
+    // because gid, visitor, home and updated are IMMUTABLE
+    const prepareMeta = R.pipe(R.omit(['gid', 'visitor', 'home', 'updated']), JSON.stringify);
+    return db.query(
+      'UPDATE contests SET meta=:meta, status=:status, updated=NOW() WHERE id = :id',
+      { meta: prepareMeta(meta), id, status },
+    );
+  },
+  async delete({ id }) {
+    const db = await dbP;
+    return db.query('DELETE FROM contests WHERE id = :id', { id });
   },
   async migrate() {
     const db = await dbP;
-    await db.query("CREATE TABLE `contests` ( `id` VARCHAR(32) NOT NULL , `home` VARCHAR(32) NOT NULL ,`away` VARCHAR(32) NOT NULL , `gid` VARCHAR(32) NOT NULL ,`status` ENUM('SCHEDULED','PLAYED','WALKOVER') NOT NULL,`updated` TIMESTAMP NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`), INDEX (`home`),INDEX(`away`), INDEX (`gid`)) ENGINE = InnoDB;");
+    await db.query("CREATE TABLE `contests` ( `id` VARCHAR(32) NOT NULL , `home` VARCHAR(32) NOT NULL ,`visitor` VARCHAR(32) NOT NULL , `gid` VARCHAR(32) NOT NULL ,`status` ENUM('SCHEDULED','PLAYED','ONGOING','WALKOVER') NOT NULL,`updated` TIMESTAMP NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`), INDEX (`home`),INDEX(`visitor`), INDEX (`gid`)) ENGINE = InnoDB;");
   },
   async drop() {
     const db = await dbP;

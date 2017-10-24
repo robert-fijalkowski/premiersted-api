@@ -39,8 +39,7 @@ module.exports = dbP => ({
   },
   async delete(id) {
     const db = await dbP;
-    await db.query('DELETE FROM games WHERE id = ?', [id]);
-    return {};
+    return db.query('DELETE FROM games WHERE id = ?', [id]);
   },
   async findBy(by = {}) {
     const db = await dbP;

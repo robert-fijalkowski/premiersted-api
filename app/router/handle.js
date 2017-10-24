@@ -7,7 +7,7 @@ module.exports = ((req, res, next) => {
     try {
       const result = resultP instanceof Function ? await (resultP()) : await resultP;
       if (!result || equals(result, {})) {
-        if (req.method === 'DELETE') {
+        if (req.method !== 'GET') {
           return res.status(200).send();
         }
         return next(new NotFound());
