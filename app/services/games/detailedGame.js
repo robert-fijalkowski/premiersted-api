@@ -25,13 +25,10 @@ module.exports = async ({ gid }) => {
     })),
     listOfCompetitors,
   ));
-  const schedule = R.pipe(
-    R.groupBy(R.prop('status')),
-    R.map(R.mapTo(
-      R.prop('id'),
-      R.identity,
-    )),
-  )(await contests.find({ gid }));
+  const schedule = R.pipe(R.mapTo(
+    R.prop('id'),
+    R.identity,
+  ))(await contests.find({ gid }));
 
   return {
     ...game,

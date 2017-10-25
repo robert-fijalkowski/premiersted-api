@@ -21,7 +21,7 @@ module.exports = dbP => ({
   },
   async teasers(ids) {
     const db = await dbP;
-    const games = await Promise.all(ids.map(id => db.query('SELECT name,status,location FROM games WHERE id =?', [id]).then(R.prop(0))));
+    const games = await Promise.all(ids.map(id => db.query('SELECT id,name,status,location FROM games WHERE id =?', [id]).then(R.prop(0))));
     return R.reduce(R.concat, [], games);
   },
   async findById(id) {

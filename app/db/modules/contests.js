@@ -50,7 +50,7 @@ module.exports = dbP => ({
     return R.pipe(R.head, R.map(decodeContest))(results);
   },
   async update({
-    id, name, status, ...meta
+    id, status, ...meta
   }) {
     const db = await dbP;
     // because gid, visitor, home and updated are IMMUTABLE

@@ -12,3 +12,5 @@ R.lostProps = R.curry((required, delivered) => {
 });
 
 R.required = R.curry((required, delivered) => R.isEmpty(R.lostProps(required, delivered)));
+
+module.exports = R;

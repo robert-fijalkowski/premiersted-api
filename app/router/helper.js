@@ -1,9 +1,9 @@
-const R = require('ramda');
+const R = require('../utils/rambda.extension');
 const { BadRequest } = require('./exceptions');
 
 module.exports = {
-  requiredProps: (...props) => (req, res, next) => {
-    const lostProps = R.lostProps(props, req.body);
+  requiredProps: (...props) => ({ body }, res, next) => {
+    const lostProps = R.lostProps(props, body);
     if (!R.isEmpty(lostProps)) {
       throw new BadRequest(`missing props: ${lostProps.join(',')}`);
     }

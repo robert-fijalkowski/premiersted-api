@@ -75,6 +75,14 @@ app.post(
 );
 
 app.post(
+  '/:id/schedule/:cid', onlyAdmin, gameExists,
+  (req, res) => {
+    const { cid, id } = req.params;
+    res.handle(games.postResult({ id: cid, gid: id, ...req.body }));
+  },
+);
+
+app.post(
   '/', requiredProps('name', 'location'), onlyAdmin,
   (req, res) => {
     res.handle(games.create(req.body));

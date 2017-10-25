@@ -3,6 +3,7 @@ const { games, competitors, contests } = require('../../db');
 const rules = require('./rules');
 const detailedGame = require('./detailedGame');
 const schedule = require('./schedule');
+const results = require('./results');
 
 const R = require('ramda');
 
@@ -46,5 +47,6 @@ module.exports = {
     return games.update(filteredFields).then(() => detailedGame({ gid: update.id }));
   },
   ...schedule,
+  ...results,
 };
 
