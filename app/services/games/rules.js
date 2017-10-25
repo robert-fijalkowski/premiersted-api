@@ -49,7 +49,7 @@ module.exports = {
       [not(isRelatedGameContest), withError(new Conflict('Trying to update unrelated contest'))],
       [not(isScheduledOrForceUpdate), withError(new Conflict('Related contest must be in SCHEDULED state'))],
       [not(isValidResult), withError(new Conflict('Result values must be an non-negative integer'))],
-      [not(isProperFinalState), withError(new Conflict('aa'))],
+      [not(isProperFinalState), withError(new Conflict('Posted result has to be in proper final status (PLAYED, WALKOVER)'))],
       [R.T, R.T],
     ])({
       game, contest, result, status, force,

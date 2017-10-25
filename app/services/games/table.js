@@ -28,7 +28,6 @@ const asWin = ({ result: { visitor, home } }) => ({
   scored: R.max(visitor, home),
   lost: R.min(visitor, home),
   balance: Math.abs(visitor - home),
-  form: ['W'],
 });
 const asDraw = ({ result: { visitor } }) => ({
   played: 1,
@@ -36,7 +35,6 @@ const asDraw = ({ result: { visitor } }) => ({
   draws: 1,
   scored: visitor,
   lost: visitor,
-  form: ['D'],
 });
 
 const asLose = ({ result: { visitor, home } }) => ({
@@ -45,13 +43,11 @@ const asLose = ({ result: { visitor, home } }) => ({
   scored: R.min(visitor, home),
   balance: -Math.abs(visitor - home),
   lost: R.max(visitor, home),
-  form: ['L'],
 });
 const initialRow = zeroFillObj('points', 'wins', 'draws', 'loses', 'played', 'scored', 'lost', 'balance');
 const mergeTablePartials =
 R.mergeWithKey((k, l, r) => R.cond([
   [R.equals('id'), R.always(l)],
-  [R.equals('form'), R.always(undefined)],
   [R.T, R.always(l + r)],
 ])(k));
 module.exports = {
@@ -65,7 +61,6 @@ module.exports = {
     const initialTable = id => ({
       id,
       ...initialRow,
-      form: [],
     });
 
     const matchesIndexed = R.mergeDeepWith(
@@ -86,12 +81,14 @@ module.exports = {
     );
     const emptyTable = R.mapTo(R.prop('uid'), ({ uid }) => initialTable(uid))(players);
     const theTable = R.mergeWith(mergeTablePartials, emptyTable, table);
+
     const sortedTable = R.sortWith([
       R.descend(R.prop('points')),
       R.ascend(R.prop('played')),
       R.descend(R.prop('wins')),
       R.descend(R.prop('balance')),
     ], R.values(theTable));
+
     return R.scan((previous, next) => {
       if (R.equals(previous, [])) {
         return { ...next, position: 1 };
@@ -102,7 +99,7 @@ module.exports = {
         [R.T, R.always(previous.position + 1)],
       ])(onlySortableKeys(previous));
       return { ...next, position };
-    })([], sortedTable);
+    })([], sortedTable).slice(1);
   },
   async updateTable({ gid }) {
     const [game, table] = await Promise.all([
@@ -112,4 +109,3 @@ module.exports = {
     games.update({ ...game, table });
   },
 };
-
