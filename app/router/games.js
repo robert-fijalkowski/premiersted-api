@@ -78,10 +78,27 @@ app.post(
   '/:id/schedule/:cid', onlyAdmin, gameExists,
   (req, res) => {
     const { cid, id } = req.params;
-    res.handle(games.postResult({ id: cid, gid: id, ...req.body }));
+    res.handle(games.postResult({
+      id: cid, gid: id, ...req.body, ...req.query,
+    }));
   },
 );
 
+app.get(
+  '/:id/table', gameExists,
+  (req, res) => {
+    const { id } = req.params;
+    res.handle(games.getTable({ gid: id }));
+  },
+);
+
+app.post(
+  '/:id/table', onlyAdmin, gameExists,
+  (req, res) => {
+    const { id } = req.params;
+    res.handle(games.updateTable({ gid: id }));
+  },
+);
 app.post(
   '/', requiredProps('name', 'location'), onlyAdmin,
   (req, res) => {

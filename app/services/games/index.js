@@ -4,6 +4,7 @@ const rules = require('./rules');
 const detailedGame = require('./detailedGame');
 const schedule = require('./schedule');
 const results = require('./results');
+const table = require('./table');
 
 const R = require('ramda');
 
@@ -43,10 +44,11 @@ module.exports = {
     return games.create(o);
   },
   async update(update) {
-    const filteredFields = R.omit(['competitors', 'schedule'], update);
+    const filteredFields = R.omit(['competitors', 'schedule', 'table'], update);
     return games.update(filteredFields).then(() => detailedGame({ gid: update.id }));
   },
   ...schedule,
   ...results,
+  ...table,
 };
 

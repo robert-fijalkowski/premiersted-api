@@ -1,7 +1,10 @@
 const R = require('ramda');
 
 const decodeContest = contest => ({
-  ...contest, meta: undefined, ...JSON.parse(contest.meta),
+  ...contest,
+  meta: undefined,
+  ...JSON.parse(contest.meta),
+  updated: new Date(contest.updated).toUTCString(),
 });
 const prepareConditions = (params) => {
   const genericFind = field => `${field} = ?`;
@@ -45,7 +48,7 @@ module.exports = dbP => ({
     const [sql, injects] = prepareConditions(params);
     const results = await R.cond([
       [R.isEmpty, R.always([])],
-      [R.T, () => db.query(`SELECT * FROM contests WHERE ${sql.join(' AND ')}`, injects)],
+      [R.T, () => db.query(`SELECT * FROM contests WHERE ${sql.join(' AND ')} ORDER by updated DESC`, injects)],
     ])(injects);
     return R.pipe(R.head, R.map(decodeContest))(results);
   },
