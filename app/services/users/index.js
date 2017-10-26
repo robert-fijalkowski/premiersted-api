@@ -50,15 +50,17 @@ module.exports = {
   async getAccess({ id }) {
     return users.getAccess(id);
   },
-  async update({ id, body }) {
+  async update({ id, body }, { right }) {
+    const user = await users.findById(id);
     await Promise.all([
       users.updateMeta({
-        ...body, id,
+        ...user, ...body, id,
       }),
-      users.setAccess({
-        ...body, id,
-      }),
+      right === 'ADMIN' && body.access ? users.setAccess({
+        access: body.access, id,
+      }) : [],
     ]);
+    console.log(right, body);
     return users.findById(id);
   },
 };

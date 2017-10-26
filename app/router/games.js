@@ -24,7 +24,7 @@ app.get(
   },
 );
 
-app.post(
+app.put(
   '/:id', onlyAdmin, gameExists,
   async (req, res) => {
     const game = await games.get({ gid: req.params.id });
@@ -79,7 +79,17 @@ app.post(
   (req, res) => {
     const { cid, id } = req.params;
     res.handle(games.postResult({
-      id: cid, gid: id, ...req.body, ...req.query,
+      id: cid, gid: id, ...req.body,
+    }));
+  },
+);
+
+app.put(
+  '/:id/schedule/:cid', onlyAdmin, gameExists,
+  (req, res) => {
+    const { cid, id } = req.params;
+    res.handle(games.postResult({
+      id: cid, gid: id, ...req.body, force: true,
     }));
   },
 );

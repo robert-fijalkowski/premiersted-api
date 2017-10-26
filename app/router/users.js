@@ -2,21 +2,32 @@ const app = require('express')();
 
 const { users } = require('../services');
 const { protectLevel, protect } = require('../utils/jwt');
+const { NotFound, withError } = require('./exceptions');
 
 const onlyAdmin = protectLevel('ADMIN');
+const userExists = async ({ params: { id } }, res, next) => {
+  const exists = await users.exists({ id });
+  if (exists) {
+    return next();
+  }
+  return res.handle(withError(new NotFound(`User ${id} not exists`)));
+};
+
+const ownChangeOrAdmin = (req, res, next) =>
+  (req.params.id === req.user.id ? next() : onlyAdmin(req, res, next));
 
 app.get('/', protect, (req, res) => {
   res.handle(users.get());
 });
 
-app.get('/:id', protect, (req, res) => {
+app.get('/:id', protect, userExists, (req, res) => {
   res.handle(users.get(req.params));
 });
 
-app.post('/:id', onlyAdmin, (req, res) => {
+app.put('/:id', ownChangeOrAdmin, userExists, (req, res) => {
   res.handle(users.update({
     body: req.body, id: req.params.id,
-  }));
+  }, { right: req.user.access }));
 });
 
 module.exports = app;
