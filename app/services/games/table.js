@@ -44,12 +44,15 @@ const asLose = ({ result: { visitor, home } }) => ({
   balance: -Math.abs(visitor - home),
   lost: R.max(visitor, home),
 });
+
 const initialRow = zeroFillObj('points', 'wins', 'draws', 'loses', 'played', 'scored', 'lost', 'balance');
+
 const mergeTablePartials =
 R.mergeWithKey((k, l, r) => R.cond([
   [R.equals('id'), R.always(l)],
   [R.T, R.always(l + r)],
 ])(k));
+
 module.exports = {
   async getTable({ gid }) {
     const [matches, players] = await Promise.all([
@@ -91,21 +94,23 @@ module.exports = {
 
     return R.scan((previous, next) => {
       if (R.equals(previous, [])) {
-        return { ...next, position: 1 };
+        return { ...next, position: 1, overlap: 1 };
       }
       const onlySortableKeys = R.pickAll(['points', 'played', 'wins', 'balance']);
-      const position = R.cond([
-        [R.equals(onlySortableKeys(next)), R.always(previous.position + 1)],
-        [R.T, R.always(previous.position + 1)],
+      const { position, overlap } = previous;
+      const sameResults = R.equals(onlySortableKeys(next));
+      const nPosition = R.cond([
+        [sameResults, R.always({ position, overlap: overlap + 1 })],
+        [R.T, R.always({ position: position + overlap, overlap: 1 })],
       ])(onlySortableKeys(previous));
-      return { ...next, position };
-    })([], sortedTable).slice(1);
+      return { ...next, ...nPosition };
+    })([], sortedTable).slice(1).map(R.omit(['overlap']));
   },
   async updateTable({ gid }) {
     const [game, table] = await Promise.all([
       games.findById(gid),
       this.getTable({ gid }),
     ]);
-    games.update({ ...game, table });
+    return games.update({ ...game, table });
   },
 };

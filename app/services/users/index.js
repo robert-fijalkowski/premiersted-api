@@ -38,6 +38,9 @@ const userDetails = async ({ id }) => {
 
 module.exports = {
   cachedFind,
+  async exists({ id }) {
+    return !!(await users.findById(id));
+  },
   async get(q) {
     return R.cond([
       [R.prop('id'), userDetails],

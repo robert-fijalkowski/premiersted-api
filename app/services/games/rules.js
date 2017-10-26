@@ -1,6 +1,7 @@
 const { competitors, games, contests } = require('../../db');
 const R = require('ramda');
 const { Conflict, withError } = require('../../router/exceptions');
+const users = require('../users');
 
 const isCompetitionsStillOpen = R.pathEq(['game', 'status'], 'OPEN');
 
@@ -15,13 +16,15 @@ module.exports = {
   addCompetitor: async ({ gid, club, uid }) => {
     const list = (await competitors.find({ gid, club })).filter(f => f.uid !== uid);
     const [game] = await games.teasers([gid]);
+    const userExists = await users.exists({ id: uid });
+    const isExistingUser = R.propEq('userExists', true);
     const isClubAlreadyNotChosen = R.propEq('list', []);
-
     return R.cond([
+      [not(isExistingUser), withError(new Conflict('This user not exists!'))],
       [not(isClubAlreadyNotChosen), withError(new Conflict('This club has been already chosen'))],
       [not(isCompetitionsStillOpen), withError(new Conflict('This competitions already started'))],
       [R.T, R.T],
-    ])({ list, game });
+    ])({ list, game, userExists });
   },
   schedule: async ({ gid, schedule }) => {
     const game = await games.findById(gid);

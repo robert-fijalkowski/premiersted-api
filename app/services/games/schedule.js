@@ -1,6 +1,8 @@
 const { games, competitors, contests } = require('../../db');
 const randomatic = require('randomatic');
 const rules = require('./rules');
+const table = require('./table');
+const detailedGame = require('./detailedGame');
 
 const R = require('ramda');
 
@@ -47,7 +49,8 @@ module.exports = {
     const schedule = await prepareSchedule({ gid });
     await rules.schedule({ gid, schedule });
     await saveSchedule({ gid, schedule });
-    return 'OK';
+    await table.updateTable({ gid });
+    return detailedGame({ gid });
   },
   async prepareSchedule({ gid }) {
     const schedule = await prepareSchedule({ gid });
