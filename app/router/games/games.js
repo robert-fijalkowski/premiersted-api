@@ -1,17 +1,8 @@
-const app = require('express')();
-const { games } = require('../services');
-const { NotFound, error } = require('./exceptions');
-const { protectLevel } = require('../utils/jwt');
-const { requiredProps } = require('./helper');
+const app = require('express').Router();
+const { games } = require('../../services');
+const { requiredProps } = require('../helper');
 
-const onlyAdmin = protectLevel('ADMIN');
-
-const gameExists = async (req, res, next) => {
-  const { id } = req.params;
-  const exists = await games.exists(req.params.id);
-  if (exists) { return next(); }
-  return res.handle(() => error(new NotFound(`Game ${id} does not exists`)));
-};
+const { onlyAdmin, gameExists } = require('./rights');
 
 app.get('/', async (req, res) => {
   res.handle(await games.get(req.query));
@@ -74,26 +65,6 @@ app.post(
   },
 );
 
-app.post(
-  '/:id/schedule/:cid', onlyAdmin, gameExists,
-  (req, res) => {
-    const { cid, id } = req.params;
-    res.handle(games.postResult({
-      id: cid, gid: id, ...req.body,
-    }));
-  },
-);
-
-app.put(
-  '/:id/schedule/:cid', onlyAdmin, gameExists,
-  (req, res) => {
-    const { cid, id } = req.params;
-    res.handle(games.postResult({
-      id: cid, gid: id, ...req.body, force: true,
-    }));
-  },
-);
-
 app.get(
   '/:id/table', gameExists,
   (req, res) => {
@@ -115,4 +86,6 @@ app.post(
     res.handle(games.create(req.body));
   },
 );
+
+
 module.exports = app;

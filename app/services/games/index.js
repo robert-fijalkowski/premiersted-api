@@ -47,6 +47,9 @@ module.exports = {
     const filteredFields = R.omit(['competitors', 'schedule', 'table'], update);
     return games.update(filteredFields).then(() => detailedGame({ gid: update.id }));
   },
+  async contest({ cid }) {
+    return contests.findById({ id: cid });
+  },
   ...schedule,
   ...results,
   ...table,

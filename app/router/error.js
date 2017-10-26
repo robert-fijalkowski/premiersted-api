@@ -7,7 +7,8 @@ module.exports = async (err, req, res, next) => {
   const { code, msg, payload } = R.cond([
     [R.is(E.BadRequest), use({ code: 400, msg: `Bad Request${message}` })],
     [R.is(E.NotFound), use({ code: 404, msg: `Not Found${message}` })],
-    [R.is(E.Conflict), use({ code: 409, msg: `${err.message}` })],
+    [R.is(E.Conflict), use({ code: 409, msg: `Conflict: ${err.message}` })],
+    [R.is(E.Forbidden), use({ code: 403, msg: `Forbidden: ${err.message}` })],
     [R.T, use({ code: 500, msg: `Internal Server Error${message}` })],
   ])(await res.result || err);
   if (code >= 500) { // all codes below are under control
