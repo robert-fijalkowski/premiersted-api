@@ -21,9 +21,7 @@ const uids = chance.n(() => `github:${chance.natural({
 })}`, 5);
 
 describe('competitors management', () => {
-  it('stub db', async () => {
-    await competitors.migrate();
-  });
+  beforeAll(() => competitors.migrate());
   it('feed db', async () => {
     let aClub = 0;
     const samples = R.pipe(
@@ -88,8 +86,5 @@ describe('competitors management', () => {
     expect(list).toHaveLength(0);
   });
 
-  it('drop db', async () => {
-    await competitors.drop();
-    (await conn(config())).end();
-  });
+  afterAll(async () => competitors.drop());
 });

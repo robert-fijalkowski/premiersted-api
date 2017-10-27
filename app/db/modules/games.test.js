@@ -25,9 +25,8 @@ chance.mixin({
 const sample = chance.game();
 
 describe('games management', () => {
-  it('stub db', async () => {
-    await games.migrate();
-  });
+  beforeAll(() => games.migrate());
+
   it('should create league with status open with some ID', async () => {
     const game = await games.create(sample);
     expect(game).toMatchObject({
@@ -98,9 +97,5 @@ describe('games management', () => {
     const allGames = await games.getAll();
     expect(allGames.length).toEqual(21);
   });
-  it('drop db', async () => {
-    await games.drop();
-    const db = await conn(config());
-    db.end();
-  });
+  afterAll(() => games.drop());
 });

@@ -30,7 +30,7 @@ const sampleContest = {
   gid: 'game:1', home: 'uid:1', id: 'contest-1', visitor: 'uid2', extra: 'data',
 };
 describe('competitors management', () => {
-  it('stub db', async () => {
+  beforeAll(async () => {
     await contests.migrate();
   });
 
@@ -79,8 +79,5 @@ describe('competitors management', () => {
     const updated = await contests.findById({ id });
     expect(updated).toBeNull();
   });
-  it('drop db', async () => {
-    await contests.drop();
-    (await conn(config())).end();
-  });
+  afterAll(() => contests.drop());
 });

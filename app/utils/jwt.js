@@ -3,6 +3,10 @@ const config = require('../config')();
 
 const { users, level } = require('../services');
 
+const getToken = ({ user }) =>
+  jwt.sign(user, config.get('JWT_SECRET'), {
+    issuer: 'Premiersted', expiresIn: '7 days',
+  });
 const template = token => `
   <html>
     <head>
@@ -18,12 +22,9 @@ const template = token => `
     </head>
   </html>
 `;
-const auth = (req, res) => {
-  if (req.user) {
-    const token = jwt.sign(req.user, config.get('JWT_SECRET'), {
-      issuer: 'Premiersted', expiresIn: '7 days',
-    });
-    res.send(template(token));
+const auth = ({ user }, res) => {
+  if (user) {
+    res.send(template(getToken({ user })));
   }
 };
 
@@ -60,5 +61,5 @@ const protectLevel = requestedLevel => (req, res, next) => {
   });
 };
 module.exports = {
-  auth, protect, protectLevel,
+  auth, protect, protectLevel, getToken,
 };

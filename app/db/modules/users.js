@@ -27,9 +27,7 @@ module.exports = dbP => ({
     }
     return user.access;
   },
-  async store({
-    id, ...rest
-  }) {
+  async store({ id, ...rest }) {
     const db = await dbP;
     db.query('INSERT INTO users(id, access, meta) VALUES(?,?,?)', [id, 'NONE', JSON.stringify(rest)]);
     return this.findById(id);
@@ -38,14 +36,13 @@ module.exports = dbP => ({
     id, meta, access, ...rest
   }) {
     const db = await dbP;
-    await db.query('UPDATE users SET meta=? WHERE id=?', [JSON.stringify({
-      ...meta, ...rest,
-    }), id]);
+    await db.query(
+      'UPDATE users SET meta=? WHERE id=?',
+      [JSON.stringify({ ...meta, ...rest }), id],
+    );
     return this.findById(id);
   },
-  async setAccess({
-    id, access,
-  }) {
+  async setAccess({ id, access }) {
     const db = await dbP;
     await db.query('UPDATE users SET access=? WHERE id=?', [access, id]);
     return this.findById(id);
