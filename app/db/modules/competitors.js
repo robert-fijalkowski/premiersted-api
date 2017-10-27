@@ -28,14 +28,14 @@ module.exports = dbP => ({
 
   async migrate() {
     const db = await dbP;
-    await db.query('CREATE TABLE `competitors` ( `gid` VARCHAR(32) NOT NULL , `uid` VARCHAR(32) NOT NULL , `club` INT NOT NULL ) ENGINE = InnoDB;');
+    await db.query('CREATE TABLE IF NOT EXISTS `competitors` ( `gid` VARCHAR(32) NOT NULL , `uid` VARCHAR(32) NOT NULL , `club` INT NOT NULL ) ENGINE = InnoDB;');
     await db.query('ALTER TABLE `competitors` ADD PRIMARY KEY (`gid`,`uid`), ADD KEY `gid` (`gid`), ADD KEY `uid` (`uid`);');
     await db.query('ALTER TABLE `competitors` CHANGE `club` `club` VARCHAR(5) NOT NULL;');
   },
 
   async drop() {
     const db = await dbP;
-    return db.query('DROP TABLE `competitors`;');
+    return db.query('DROP TABLE IF EXISTS `competitors`;');
   },
 });
 

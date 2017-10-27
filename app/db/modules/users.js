@@ -42,6 +42,10 @@ module.exports = dbP => ({
     );
     return this.findById(id);
   },
+  async delete({ id }) {
+    const db = await dbP;
+    return db.query('DELETE FROM users WHERE id=:id', { id });
+  },
   async setAccess({ id, access }) {
     const db = await dbP;
     await db.query('UPDATE users SET access=? WHERE id=?', [access, id]);
@@ -49,12 +53,12 @@ module.exports = dbP => ({
   },
   async migrate() {
     const db = await dbP;
-    return db.query("CREATE TABLE `users` ( `id` VARCHAR(32) NOT NULL , `access` ENUM('NONE','USER','ADMIN','') NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
+    return db.query("CREATE TABLE IF NOT EXISTS `users` ( `id` VARCHAR(32) NOT NULL , `access` ENUM('NONE','USER','ADMIN','') NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
   },
 
   async drop() {
     const db = await dbP;
-    return db.query('DROP TABLE `users`;');
+    return db.query('DROP TABLE IF EXISTS `users`;');
   },
 });
 

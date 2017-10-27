@@ -71,11 +71,11 @@ module.exports = dbP => ({
   },
   async migrate() {
     const db = await dbP;
-    return db.query("CREATE TABLE `games` ( `id` VARCHAR(32) NOT NULL , `name` VARCHAR(64) NOT NULL , `location` VARCHAR(64) NOT NULL , `status` ENUM('OPEN','ONGOING','EXPIRED','CANCELLED') NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
+    return db.query("CREATE TABLE IF NOT EXISTS `games` ( `id` VARCHAR(32) NOT NULL , `name` VARCHAR(64) NOT NULL , `location` VARCHAR(64) NOT NULL , `status` ENUM('OPEN','ONGOING','EXPIRED','CANCELLED') NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
   },
   async drop() {
     const db = await dbP;
-    return db.query('DROP TABLE `games`');
+    return db.query('DROP TABLE IF EXISTS `games`');
   },
 });
 

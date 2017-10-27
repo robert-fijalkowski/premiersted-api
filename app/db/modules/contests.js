@@ -69,11 +69,11 @@ module.exports = dbP => ({
   },
   async migrate() {
     const db = await dbP;
-    await db.query("CREATE TABLE `contests` ( `id` VARCHAR(32) NOT NULL , `home` VARCHAR(32) NOT NULL ,`visitor` VARCHAR(32) NOT NULL , `gid` VARCHAR(32) NOT NULL ,`status` ENUM('SCHEDULED','PLAYED','ONGOING','WALKOVER') NOT NULL,`updated` TIMESTAMP NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`), INDEX (`home`),INDEX(`visitor`), INDEX (`gid`)) ENGINE = InnoDB;");
+    await db.query("CREATE TABLE IF NOT EXISTS `contests` ( `id` VARCHAR(32) NOT NULL , `home` VARCHAR(32) NOT NULL ,`visitor` VARCHAR(32) NOT NULL , `gid` VARCHAR(32) NOT NULL ,`status` ENUM('SCHEDULED','PLAYED','ONGOING','WALKOVER') NOT NULL,`updated` TIMESTAMP NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`), INDEX (`home`),INDEX(`visitor`), INDEX (`gid`)) ENGINE = InnoDB;");
   },
   async drop() {
     const db = await dbP;
-    return db.query('DROP TABLE `contests`;');
+    return db.query('DROP TABLE IF EXISTS `contests`;');
   },
 });
 

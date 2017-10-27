@@ -22,7 +22,6 @@ const contestDetails = async (c) => {
 const promiseAll = pList => Promise.all(pList);
 const userDetails = async ({ id }) => {
   const user = await users.findById(id);
-  if (!user) return null;
   const gamesIdsList = R.map(R.prop('gid'))(await competitors.find({ uid: user.id }));
   const [contestsList, gamesList] =
   await Promise.all([
@@ -60,7 +59,6 @@ module.exports = {
         access: body.access, id,
       }) : [],
     ]);
-    console.log(right, body);
     return users.findById(id);
   },
 };

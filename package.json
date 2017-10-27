@@ -8,6 +8,11 @@
     "start": "node --inspect app/index",
     "db:migrate": "node db/migrate"
   },
+  "jest":{
+    "collectCoverageFrom" : ["**/*.{js,jsx}", "!**/node_modules/**", "!**/vendor/**" ],
+    "coveragePathIgnorePatterns" :["/node_modules/", "/test/", "/coverage/"],
+    "collectCoverage": true
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
