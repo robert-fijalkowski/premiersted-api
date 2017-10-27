@@ -19,6 +19,12 @@ const ownChangeOrAdmin = (req, res, next) =>
 app.get('/', protect, (req, res) => {
   res.handle(users.get());
 });
+const myProfile = (req, res) => {
+  res.handle(users.get(req.user));
+};
+
+app.get('/i', protect, myProfile);
+app.get('/myProfile', protect, myProfile);
 
 app.get('/:id', protect, userExists, (req, res) => {
   res.handle(users.get(req.params));

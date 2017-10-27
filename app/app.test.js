@@ -65,6 +65,13 @@ describe('http test', () => {
         expect(body).toHaveLength(1);
         expect(body[0]).toMatchObject({ id: 'admin:1', access: 'ADMIN' });
       });
+      it('should get myself profile as auth user', async () => {
+        const { statusCode, body } = await request.get('/users/i').set('auth-token', token);
+        expect(statusCode).toEqual(200);
+        expect(body).toMatchObject({
+          id: 'admin:1', access: 'ADMIN', games: {}, contests: [],
+        });
+      });
     });
     afterAll(() => {
       const drops = R.pipe(R.filter(R.prop('drop')), R.pluck('drop'), R.values)(db);
