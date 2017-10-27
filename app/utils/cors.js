@@ -3,7 +3,7 @@ const cors = require('cors');
 module.exports = (app) => {
   app.use(cors({
     origin: [/^http(s)?:\/\/localhost/, /http(s)?:\/\/([^.]+\.)*premiersted.schibsted.ga$/],
-    allowedHeaders: ['auth-token'],
+    allowedHeaders: ['auth-token', 'content-type'],
     preflightContinue: false,
   }));
 };
