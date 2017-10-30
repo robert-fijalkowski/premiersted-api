@@ -21,6 +21,7 @@ const conn = async (cfg) => {
     ...creds,
     namedPlaceholders: true,
   });
+  memo[key].query("SET time_zone = 'Europe/Warsaw'");
   memo[key].on('end', () => { memo[key] = null; });
   return conn(cfg);
 };
