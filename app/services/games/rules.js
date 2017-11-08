@@ -1,7 +1,8 @@
 const { competitors, games, contests } = require('../../db');
 const R = require('ramda');
-const { Conflict, withError } = require('../../router/exceptions');
+const { Conflict, BadRequest, withError } = require('../../router/exceptions');
 const users = require('../users');
+const clubs = require('../clubs');
 
 const isCompetitionsStillOpen = R.pathEq(['game', 'status'], 'OPEN');
 
@@ -19,12 +20,18 @@ module.exports = {
     const userExists = await users.exists({ id: uid });
     const isExistingUser = R.propEq('userExists', true);
     const isClubAlreadyNotChosen = R.propEq('list', []);
+    const isClubSet = R.prop('club');
+    const isValidClub = R.pipe(R.prop('club'), R.assoc('id', R.__, {}), clubs.get, R.propEq('id', club));
     return R.cond([
       [not(isExistingUser), withError(new Conflict('This user not exists!'))],
       [not(isClubAlreadyNotChosen), withError(new Conflict('This club has been already chosen'))],
       [not(isCompetitionsStillOpen), withError(new Conflict('This competitions already started'))],
+      [not(isClubSet), withError(new BadRequest('Chosen club cannot be empty'))],
+      [not(isValidClub), withError(new BadRequest('Must set a valid club'))],
       [R.T, R.T],
-    ])({ list, game, userExists });
+    ])({
+      list, game, userExists, club,
+    });
   },
   deleteCompetitor: async ({ gid, uid }) => {
     const list = (await competitors.find({ gid, uid }));
