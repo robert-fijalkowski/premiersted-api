@@ -26,6 +26,17 @@ module.exports = {
       [R.T, R.T],
     ])({ list, game, userExists });
   },
+  deleteCompetitor: async ({ gid, uid }) => {
+    const list = (await competitors.find({ gid, uid }));
+    const [game] = await games.teasers([gid]);
+    const userExists = await users.exists({ id: uid });
+    const isExistingUser = R.propEq('userExists', true);
+    return R.cond([
+      [not(isExistingUser), withError(new Conflict('This user not exists!'))],
+      [not(isCompetitionsStillOpen), withError(new Conflict('This competitions already started'))],
+      [R.T, R.T],
+    ])({ list, game, userExists });
+  },
   schedule: async ({ gid, schedule }) => {
     const game = await games.findById(gid);
     return R.cond([

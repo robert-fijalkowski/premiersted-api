@@ -37,8 +37,9 @@ module.exports = {
     await rules.addCompetitor({ gid, uid, club });
     return competitors.add({ gid, uid, club }).then(() => detailedGame({ gid }));
   },
-  async delCompetitor(gid, { uid, club }) {
-    return competitors.delete({ gid, uid, club }).then(() => detailedGame({ gid }));
+  async delCompetitor(gid, { uid }) {
+    await rules.deleteCompetitor({ gid, uid });
+    return competitors.delete({ gid, uid }).then(() => detailedGame({ gid }));
   },
   async create(o) {
     return games.create(o);
