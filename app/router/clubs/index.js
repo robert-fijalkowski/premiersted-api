@@ -1,11 +1,14 @@
 const app = require('express')();
-const { clubs } = require('../services');
+const { clubs } = require('../../services');
 const R = require('ramda');
-const { BadRequest, error } = require('./exceptions');
+const { BadRequest, error } = require('../exceptions');
 
-app.get('/', (req, res) => {
-  res.handle(clubs.get(req.query));
-});
+app.get(
+  '/',
+  (req, res) => {
+    res.handle(clubs.get(req.query));
+  },
+);
 
 app.get('/:type', (req, res, next) => {
   const { type } = req.params;

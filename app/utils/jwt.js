@@ -28,19 +28,37 @@ const auth = ({ user }, res) => {
   }
 };
 
-const protect = (req, res, next) => {
+const propagateAuthIssue = msg => (reqOrWs, res, code = 401) => {
+  if (reqOrWs.upgrade) {
+    if (!reqOrWs.closing) {
+      reqOrWs.ws.send(msg);
+      process.nextTick(() => reqOrWs.ws.close());
+    }
+    reqOrWs.closing = true; // eslint-disable-line
+    return;
+  }
+  res.status(code).send(msg);
+};
+
+const decodeJWT = (req, res, next) => {
   const token = req.headers['auth-token'];
-  if (token) {
+  if (!req.user && token) {
     jwt.verify(token, config.get('JWT_SECRET'), {}, (err, decoded) => {
       if (err) {
-        res.status(401).send(`Unauthorized: ${err.message}`);
-        return;
+        propagateAuthIssue(`Unauthorized: ${err.message}`)(req, res);
       }
       req.user = decoded;
-      next();
     });
+  }
+  next();
+};
+
+const protect = (req, res, next) => {
+  decodeJWT(req, res, () => {});
+  if (req.user) {
+    next();
   } else {
-    res.status(401).send('Unauthorized: no token provided');
+    propagateAuthIssue('Unauthorized: no token provided')(req, res);
   }
 };
 
@@ -51,15 +69,15 @@ const protectLevel = requestedLevel => (req, res, next) => {
         if (level.atLeast(userLevel, requestedLevel)) {
           next();
         } else {
-          res.status(403).send(`Forbidden: insufficient permissions ${userLevel}, needs ${requestedLevel}`);
+          propagateAuthIssue(`Forbidden: insufficient permissions ${userLevel}, needs ${requestedLevel}`)(req, res, 403);
         }
       })
       .catch((e) => {
         console.error(e);
-        res.status(500).send('Internal Server Error');
+        propagateAuthIssue('Internal Server Error')(req, res, 403);
       });
   });
 };
 module.exports = {
-  auth, protect, protectLevel, getToken,
+  auth, protect, protectLevel, getToken, decodeJWT,
 };

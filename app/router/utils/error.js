@@ -1,4 +1,4 @@
-const E = require('./exceptions');
+const E = require('../exceptions');
 const R = require('ramda');
 
 module.exports = async (err, req, res, next) => {
@@ -17,7 +17,9 @@ module.exports = async (err, req, res, next) => {
   if (payload) {
     return res.status(code).json(payload);
   }
-  res.status(code).send(msg);
+  if (!req.upgrade) {
+    res.status(code).send(msg);
+  }
   return next();
 };
 

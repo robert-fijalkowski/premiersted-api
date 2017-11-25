@@ -2,8 +2,15 @@ const { games, competitors, contests } = require('../../db');
 
 const clubs = require('../clubs');
 const users = require('../users');
+const teaser = require('./teaser');
 
 const R = require('ramda');
+
+const continuatedGames = R.pipe(
+  R.mapObjIndexed((list, id) => teaser(id)
+    .then(R.assoc('promoted', list))),
+  R.values,
+);
 
 module.exports = async ({ gid }) => {
   const game = await games.findById(gid);
@@ -11,6 +18,10 @@ module.exports = async ({ gid }) => {
     return null;
   }
   const listOfCompetitors = await competitors.find({ gid });
+  const parent = game.parent ? (await teaser(game.parent)) : undefined;
+  const continueIn = game.continueIn
+    ? R.indexBy(R.prop('id'), await Promise.all(continuatedGames(game.continueIn)))
+    : undefined;
   const competitor = R.groupBy(
     R.prop('id'),
     await Promise.all(R.map(
@@ -32,7 +43,10 @@ module.exports = async ({ gid }) => {
 
   return {
     ...game,
+    parent,
+    continueIn,
     competitors: competitorList,
+    competitorsSize: R.keys(competitorList).length,
     schedule,
   };
 };

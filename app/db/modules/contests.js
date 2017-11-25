@@ -4,7 +4,7 @@ const decodeContest = contest => ({
   ...contest,
   meta: undefined,
   ...JSON.parse(contest.meta),
-  updated: new Date(contest.updated).toUTCString(),
+  updated: new Date(contest.updated).toString(),
 });
 const prepareConditions = (params) => {
   const genericFind = field => `${field} = ?`;

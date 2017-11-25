@@ -1,5 +1,5 @@
-const R = require('../utils/rambda.extension');
-const { BadRequest } = require('./exceptions');
+const R = require('../../utils/rambda.extension');
+const { BadRequest } = require('../exceptions');
 
 module.exports = {
   requiredProps: (...props) => ({ body }, res, next) => {

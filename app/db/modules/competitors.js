@@ -3,8 +3,8 @@ const R = require('ramda');
 module.exports = dbP => ({
   async add({ gid, uid, club }) {
     const db = await dbP;
-    await db.query(
-      'INSERT INTO competitors(gid,uid,club) values (:gid, :uid,:club) ON DUPLICATE KEY UPDATE club=VALUES(club)',
+    return db.query(
+      'INSERT INTO competitors(gid,uid,club) values (:gid,:uid,:club) ON DUPLICATE KEY UPDATE club=VALUES(club)',
       { gid, uid, club },
     );
   },

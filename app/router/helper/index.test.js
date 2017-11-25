@@ -1,6 +1,6 @@
 /* eslint-env jest */
-const { requiredProps } = require('./helper');
-const { BadRequest } = require('./exceptions');
+const { requiredProps } = require('./');
+const { BadRequest } = require('../exceptions');
 
 describe('helper functions', () => {
   it('should fail on missing props', () => {

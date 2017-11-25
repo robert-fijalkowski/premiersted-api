@@ -1,8 +1,8 @@
 const app = require('express')();
 
-const { users } = require('../services');
-const { protectLevel, protect } = require('../utils/jwt');
-const { NotFound, withError } = require('./exceptions');
+const { users } = require('../../services');
+const { protectLevel, protect } = require('../../utils/jwt');
+const { NotFound, withError } = require('../exceptions');
 
 const onlyAdmin = protectLevel('ADMIN');
 const userExists = async ({ params: { id } }, res, next) => {

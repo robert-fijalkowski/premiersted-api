@@ -21,14 +21,18 @@ const conn = async (cfg) => {
     ...creds,
     namedPlaceholders: true,
   });
-  memo[key].query("SET time_zone = 'Europe/Warsaw'");
+  memo[key].on('connection', (connection) => {
+    connection.query("SET time_zone = 'Europe/Warsaw'");
+  });
   memo[key].on('end', () => { memo[key] = null; });
   return conn(cfg);
 };
 module.exports = {
   conn,
   credentials,
+  connection: conn(config()),
   users: require('./modules/users')(conn(config())),
+  events: require('./modules/events')(conn(config())),
   games: require('./modules/games')(conn(config())),
   competitors: require('./modules/competitors')(conn(config())),
   contests: require('./modules/contests')(conn(config())),

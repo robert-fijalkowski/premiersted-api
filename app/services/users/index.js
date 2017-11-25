@@ -38,6 +38,7 @@ const userDetails = async ({ id }) => {
 module.exports = {
   cachedFind,
   async exists({ id }) {
+    console.log();
     return !!(await users.findById(id));
   },
   async get(q) {

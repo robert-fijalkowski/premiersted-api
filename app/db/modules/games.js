@@ -1,6 +1,7 @@
 const R = require('ramda');
 const randomatic = require('randomatic');
 
+
 const decodeGame = game => ({
   ...game, meta: undefined, ...JSON.parse(game.meta),
 });
@@ -14,15 +15,18 @@ module.exports = dbP => ({
     await db.query(
       'INSERT INTO games(id, name, location, status, meta) values (?,?,?,?,?)',
       [newId, name, location, 'OPEN', JSON.stringify({
-        ...meta, created: new Date().toUTCString(),
+        ...meta, created: new Date().toString(),
       })],
     );
     return this.findById(newId);
   },
   async teasers(ids) {
     const db = await dbP;
-    const games = await Promise.all(ids.map(id => db.query('SELECT id,name,status,location FROM games WHERE id =?', [id]).then(R.prop(0))));
-    return R.reduce(R.concat, [], games);
+    const gamesP = ids.map(id =>
+      db.query('SELECT * FROM games WHERE id =?', [id])
+        .then(R.head));
+    const games = await Promise.all(gamesP);
+    return R.pipe(R.reduce(R.concat, []), R.map(decodeGame))(games);
   },
   async findById(id) {
     const db = await dbP;
@@ -39,14 +43,18 @@ module.exports = dbP => ({
   },
   async delete(id) {
     const db = await dbP;
-    return db.query('DELETE FROM games WHERE id = ?', [id]);
+    return db.query('UPDATE games SET status = \'CANCELLED\' WHERE id = ?', [id]);
+  },
+  async complete(id) {
+    const db = await dbP;
+    return db.query('UPDATE games SET status = \'COMPLETED\' WHERE id = ?', [id]);
   },
   async findBy(by = {}) {
     const db = await dbP;
     const genericFind = (field, value) => db.query('SELECT * FROM games WHERE ::field REGEXP :value', {
       field, value,
-    })
-      .then(R.prop(0));
+    }).then(R.prop(0));
+
     const acceptedQueries = R.pickAll(['name', 'location', 'status']);
     const queries = R.mapObjIndexed((value, key) => genericFind(key, value));
     const results = await Promise.all(R.pipe(
@@ -71,7 +79,7 @@ module.exports = dbP => ({
   },
   async migrate() {
     const db = await dbP;
-    return db.query("CREATE TABLE IF NOT EXISTS `games` ( `id` VARCHAR(32) NOT NULL , `name` VARCHAR(64) NOT NULL , `location` VARCHAR(64) NOT NULL , `status` ENUM('OPEN','ONGOING','EXPIRED','CANCELLED') NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
+    return db.query("CREATE TABLE IF NOT EXISTS `games` ( `id` VARCHAR(32) NOT NULL , `name` VARCHAR(64) NOT NULL , `location` VARCHAR(64) NOT NULL , `status` ENUM('OPEN','ONGOING','EXPIRED','CANCELLED','COMPLETED') NOT NULL , `meta` TEXT NOT NULL , PRIMARY KEY (`id`)) ENGINE = InnoDB;");
   },
   async drop() {
     const db = await dbP;

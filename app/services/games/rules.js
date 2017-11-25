@@ -13,6 +13,8 @@ const isInt = (value) => {
   return false;
 };
 const not = R.complement;
+const isOngoingGame = R.pathEq(['game', 'status'], 'ONGOING');
+
 module.exports = {
   addCompetitor: async ({ gid, club, uid }) => {
     const list = (await competitors.find({ gid, club })).filter(f => f.uid !== uid);
@@ -52,12 +54,19 @@ module.exports = {
       [R.T, R.T],
     ])({ game, schedule });
   },
-  result: async ({
+  completeGame: async ({ gid }) => {
+    const game = await games.findById(gid);
+    return R.cond([
+      [R.propEq('status', 'CANCELLED'), withError(new Conflict('Cannot cancel game again'))],
+      [R.propEq('status', 'EXPIRED'), withError(new Conflict('Cannot cancel expired game'))],
+      [R.propEq('status', 'COMPLETED'), withError(new Conflict('Cannot cancel already completed game'))],
+      [R.T, R.T],
+    ])(game);
+  },
+  postOrUpdate: async ({
     id, gid, result, status, force,
   }) => {
     const isIntegerResultFor = field => R.pipe(R.path(['result', field]), R.both(isInt, R.gte(R.__, 0)));
-    const isOngoingGame = R.pathEq(['game', 'status'], 'ONGOING');
-    const isRelatedGameContest = R.pathEq(['contest', 'gid'], gid);
     const isScheduledOrForceUpdate = R.either(R.prop('force'), R.pathEq(['contest', 'status'], 'SCHEDULED'));
     const isValidResult = R.both(isIntegerResultFor('visitor'), isIntegerResultFor('home'));
     const isProperFinalState = R.pipe(R.prop('status'), R.contains(R.__, ['PLAYED', 'WALKOVER']));
@@ -67,7 +76,6 @@ module.exports = {
 
     return R.cond([
       [not(isOngoingGame), withError(new Conflict('Game must be in ONGOING state'))],
-      [not(isRelatedGameContest), withError(new Conflict('Trying to update unrelated contest'))],
       [not(isScheduledOrForceUpdate), withError(new Conflict('Related contest must be in SCHEDULED state'))],
       [not(isValidResult), withError(new Conflict('Result values must be an non-negative integer'))],
       [not(isProperFinalState), withError(new Conflict('Posted result has to be in proper final status (PLAYED, WALKOVER)'))],
@@ -75,5 +83,15 @@ module.exports = {
     ])({
       game, contest, result, status, force,
     });
+  },
+  rejectResult: async ({ id, gid }) => {
+    const isScheduled = R.pathEq(['contest', 'status'], 'SCHEDULED');
+    const game = await games.findById(gid);
+    const contest = await contests.findById({ id });
+    return R.cond([
+      [not(isOngoingGame), withError(new Conflict('Game must be in ONGOING state'))],
+      [isScheduled, withError(new Conflict('Rejecting contest has to be in proper final status (PLAYED, WALKOVER)'))],
+      [R.T, R.T],
+    ])({ game, contest });
   },
 };

@@ -13,7 +13,7 @@ const rematchMatchId = (match, matches) => R.prop('id', R.find(R.both(
 
 const supplyNewFields = matches => R.map((match) => {
   const rematch = rematchMatchId(match, matches);
-  const now = new Date().toUTCString();
+  const now = new Date().toString();
   return {
     ...match,
     rematch,

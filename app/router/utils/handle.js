@@ -1,6 +1,6 @@
 /* eslint-disable global-require */
 const { equals } = require('ramda');
-const { NotFound } = require('./exceptions');
+const { NotFound } = require('../exceptions');
 
 module.exports = ((req, res, next) => {
   res.handle = async (resultP, ifSuccess) => {
@@ -15,6 +15,7 @@ module.exports = ((req, res, next) => {
       if (ifSuccess) {
         return ifSuccess();
       }
+      res.body = result;
       return res.json(result);
     } catch (e) {
       return next(e);
