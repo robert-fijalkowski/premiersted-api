@@ -25,14 +25,7 @@ app.put(
   '/:id', onlyAdmin, gameExists,
   gameEvent('Game api://games/{{props.id}} has been modified'),
   async (req, res) => {
-    const game = await games.get({ gid: req.params.id });
-    res.handle(await games.update({
-      ...game,
-      ...req.body,
-      ...req.params,
-      status: game.status,
-      id: game.id,
-    }));
+    res.handle(await games.update(req.params.id, req.body));
   },
 );
 const deleted = 'Game api://games/{{props.id}} has been cancelled';

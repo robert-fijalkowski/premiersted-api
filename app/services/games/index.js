@@ -48,9 +48,14 @@ module.exports = {
   async create(o) {
     return games.create(o).then(({ id }) => detailedGame({ gid: id }));
   },
-  async update(update) {
-    const filteredFields = R.omit(['competitors', 'schedule', 'table', 'parent', 'continueIn'], update);
-    return games.update(filteredFields).then(() => detailedGame({ gid: update.id }));
+  async update(id, update) {
+    const game = await games.findById(id);
+    const filteredFields = R.omit([
+      'competitors', 'schedule', 'gid',
+      'table', 'parent', 'continueIn',
+    ], update);
+    return games.update({ ...filteredFields, ...game })
+      .then(() => detailedGame({ gid: update.id }));
   },
   async contest({ cid }) {
     const contest = await contests.findById({ id: cid });
