@@ -1,33 +1,19 @@
 const {
   users, competitors, games, contests,
 } = require('../../db');
-
-const Cache = require('../../utils/cache');
+const { contest } = require('../games/contest');
 const R = require('ramda');
+const cachedFind = require('./cachedFind');
 
-const cache = Cache({ maxAge: 1000 * 60, max: 100 });
-
-const cachedFind = async ({ id }) => cache.getOrSet(id, async () => {
-  const { meta: { avatar_url, name } } = await users.findById(id, ['users']);
-  return { id, name, avatar_url };
-});
-
-const contestDetails = async (c) => {
-  const [visitor, home] = await Promise.all([
-    cachedFind({ id: c.visitor }),
-    cachedFind({ id: c.home }),
-  ]);
-  return { ...c, visitor, home };
-};
+const contestDetails = async c => contest({ cid: c.id });
 const promiseAll = pList => Promise.all(pList);
 const userDetails = async ({ id }) => {
   const user = await users.findById(id);
   const gamesIdsList = R.map(R.prop('gid'))(await competitors.find({ uid: user.id }));
-  const [contestsList, gamesList] =
-  await Promise.all([
-      contests.find({ uid: id }).then(R.pipe(R.map(contestDetails), promiseAll)),
-      games.teasers(gamesIdsList).then(R.mapTo(R.prop('id'), R.identity)),
-    ]);
+  const [contestsList, gamesList] = await Promise.all([
+    contests.find({ uid: id }).then(R.pipe(R.map(contestDetails), promiseAll)),
+    games.teasers(gamesIdsList).then(R.mapTo(R.prop('id'), R.identity)),
+  ]);
   return {
     ...user,
     games: gamesList,
@@ -38,13 +24,10 @@ const userDetails = async ({ id }) => {
 module.exports = {
   cachedFind,
   async exists({ id }) {
-    return !!(await users.findById(id));
+    return !!await users.findById(id);
   },
   async get(q) {
-    return R.cond([
-      [R.prop('id'), userDetails],
-      [R.T, async () => users.getAll()],
-    ])(q);
+    return R.cond([[R.prop('id'), userDetails], [R.T, async () => users.getAll()]])(q);
   },
   async getAccess({ id }) {
     return users.getAccess(id);
@@ -53,13 +36,17 @@ module.exports = {
     const user = await users.findById(id);
     await Promise.all([
       users.updateMeta({
-        ...user, ...body, id,
+        ...user,
+        ...body,
+        id,
       }),
-      right === 'ADMIN' && body.access ? users.setAccess({
-        access: body.access, id,
-      }) : [],
+      right === 'ADMIN' && body.access
+        ? users.setAccess({
+          access: body.access,
+          id,
+        })
+        : [],
     ]);
     return users.findById(id);
   },
 };
-
