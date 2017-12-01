@@ -23,11 +23,11 @@ module.exports = async (err, req, res, next) => {
     [R.is(E.Forbidden), use({ code: 403, msg: `Forbidden: ${err.message}` })],
     [
       R.both(R.has('statusCode')),
-      e => ({ code: e.statusCode, msg: `${codeToHeader(e.statusCode)}: ${e.message}` }),
+      e => ({ code: e.statusCode || 500, msg: `${codeToHeader(e.statusCode)}: ${e.message}` }),
     ],
     [R.T, use({ code: 500, msg: `Internal Server Error${message}` })],
   ])((await res.result) || err);
-  if (code >= 500) {
+  if (!code || code >= 500) {
     // all codes below are under control
     console.error(err);
   }
