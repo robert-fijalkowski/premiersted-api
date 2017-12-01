@@ -21,18 +21,21 @@ module.exports = async (err, req, res, next) => {
     [R.is(E.NotFound), use({ code: 404, msg: `Not Found${message}` })],
     [R.is(E.Conflict), use({ code: 409, msg: `Conflict: ${err.message}` })],
     [R.is(E.Forbidden), use({ code: 403, msg: `Forbidden: ${err.message}` })],
-    [R.both(R.has('statusCode')), e => ({ code: e.statusCode, msg: `${codeToHeader(e.statusCode)}: ${e.message}` })],
+    [
+      R.both(R.has('statusCode')),
+      e => ({ code: e.statusCode, msg: `${codeToHeader(e.statusCode)}: ${e.message}` }),
+    ],
     [R.T, use({ code: 500, msg: `Internal Server Error${message}` })],
-  ])(await res.result || err);
-  if (code >= 500) { // all codes below are under control
+  ])((await res.result) || err);
+  if (code >= 500) {
+    // all codes below are under control
     console.error(err);
   }
   if (payload) {
-    return res.status(code).json(payload);
+    return res.status(code || 500).json(payload);
   }
   if (!req.upgrade) {
-    res.status(code).send(msg);
+    res.status(code || 500).send(msg);
   }
   return next();
 };
-
