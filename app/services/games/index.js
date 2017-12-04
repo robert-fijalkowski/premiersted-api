@@ -2,6 +2,7 @@ const { games, competitors, contests } = require('../../db');
 const R = require('ramda');
 
 const rules = require('./rules');
+const cachedFind = require('../users/cachedFind');
 const detailedGame = require('./detailedGame');
 const schedule = require('./schedule');
 const results = require('./results');
@@ -15,6 +16,15 @@ const deleteGame = async ({ id }) => {
   return {};
 };
 
+const fetchUsers = async (game) => {
+  const players = await Promise.all(R.pipe(R.pluck('id'), R.map(id => cachedFind({ id })))(game.table));
+  return { ...game, players };
+};
+const listView = async (list) => {
+  const a = R.cond([[R.has('table'), fetchUsers], [R.T, R.identity]]);
+  return Promise.all(R.map(a, list));
+};
+
 module.exports = {
   teaser,
   async exists(id) {
@@ -25,9 +35,9 @@ module.exports = {
       [R.prop('gid'), detailedGame],
       [
         R.anyPass([R.prop('limit'), R.prop('name'), R.prop('status'), R.prop('location')]),
-        async by => games.findBy(by),
+        async by => games.findBy(by).then(listView),
       ],
-      [R.T, async () => games.getAll(o)],
+      [R.T, async () => games.getAll(o).then(listView)],
     ])(o);
   },
   async delete({ id }) {
