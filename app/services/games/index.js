@@ -58,7 +58,7 @@ module.exports = {
   async update(id, update) {
     const game = await games.findById(id);
     const filteredFields = R.omit(
-      ['competitors', 'schedule', 'gid', 'table', 'parent', 'continueIn'],
+      ['competitors', 'schedule', 'gid', 'table', 'parent', 'continueIn', 'players'],
       update,
     );
     return games
