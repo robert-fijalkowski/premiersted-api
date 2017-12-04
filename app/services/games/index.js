@@ -21,7 +21,7 @@ const fetchUsers = async (game) => {
   return { ...game, players };
 };
 const listView = async (list) => {
-  const a = R.cond([[R.has('table'), fetchUsers], [R.T, R.identity]]);
+  const a = R.cond([[R.has('table'), fetchUsers], [R.T, g => ({ ...g, players: [] })]]);
   return Promise.all(R.map(a, list));
 };
 
