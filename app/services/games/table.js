@@ -90,6 +90,7 @@ module.exports = {
       R.ascend(R.prop('played')),
       R.descend(R.prop('wins')),
       R.descend(R.prop('balance')),
+      R.descend(R.prop('scored')),
     ], R.values(theTable));
 
     return R.scan((previous, next) => {

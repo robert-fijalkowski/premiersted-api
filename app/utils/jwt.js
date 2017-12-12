@@ -74,7 +74,7 @@ const protectLevel = requestedLevel => (req, res, next) => {
       })
       .catch((e) => {
         console.error(e);
-        propagateAuthIssue('Internal Server Error')(req, res, 403);
+        propagateAuthIssue('Internal Server Error')(req, res, 500);
       });
   });
 };
