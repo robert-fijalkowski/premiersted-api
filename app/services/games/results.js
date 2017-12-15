@@ -5,6 +5,7 @@ const table = require('./table');
 const detailedGame = require('./detailedGame');
 
 const getCurrentRound = R.curry((aTable, uid) => R.pipe(R.find(R.propEq('id', uid)), R.prop('played'), R.inc)(aTable));
+const parseResultAsNumbers = ({ home, visitor }) => ({ home: parseInt(home, 10), visitor: parseInt(visitor, 10) });
 
 module.exports = {
   async postResult({
@@ -28,7 +29,7 @@ module.exports = {
     };
     await contests.update({
       ...contest,
-      result,
+      result: parseResultAsNumbers(result),
       status,
       edited: R.inc(contest.edited || -1),
       round,
@@ -48,7 +49,7 @@ module.exports = {
     await contests.update({
       ...contest,
       ...R.omit(['round', 'isRematch'], other),
-      result,
+      result: parseResultAsNumbers(result),
       status,
       edited: contest.edited + 1,
     });
