@@ -11,8 +11,8 @@ module.exports = {
     const clubDetails = R.pipe(R.head, R.prop('club'), id => clubs.get({ id }));
     const { gid } = contest;
     const [homeClub, visitorClub, homeUser, visitorUser, editedBy] = await Promise.all([
-      competitors.find({ gid, uid: contest.visitor }).then(clubDetails),
       competitors.find({ gid, uid: contest.home }).then(clubDetails),
+      competitors.find({ gid, uid: contest.visitor }).then(clubDetails),
       cachedUser({ id: contest.home }),
       cachedUser({ id: contest.visitor }),
       contest.editedBy ? cachedUser({ id: contest.editedBy }) : undefined,
