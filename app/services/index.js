@@ -1,7 +1,8 @@
 module.exports = {
-  games: require('./games'),
-  users: require('./users'),
+  accounts: require('./accounts'),
   clubs: require('./clubs'),
+  games: require('./games'),
   level: require('./level'),
+  users: require('./users'),
 };
 

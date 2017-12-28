@@ -27,10 +27,12 @@ const conn = async (cfg) => {
   memo[key].on('end', () => { memo[key] = null; });
   return conn(cfg);
 };
+
 module.exports = {
   conn,
   credentials,
   connection: conn(config()),
+  accounts: require('./modules/accounts')(conn(config())),
   users: require('./modules/users')(conn(config())),
   events: require('./modules/events')(conn(config())),
   games: require('./modules/games')(conn(config())),

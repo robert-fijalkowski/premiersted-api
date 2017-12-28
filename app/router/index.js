@@ -5,6 +5,7 @@ const { protect } = require('../utils/jwt');
 module.exports = (app) => {
   app.use(require('./utils/handle'));
   app.use('/_health', require('./_health'));
+  app.use('/accounts', protect, require('./accounts'));
   app.use('/users', protect, require('./users'));
   app.use('/games', protect, require('./games'));
   app.use('/events', protect, require('./events'));

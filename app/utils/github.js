@@ -9,13 +9,18 @@ app.use(passport.initialize());
 
 const GitHubStrategy = require('passport-github').Strategy;
 const { users } = require('../db');
+const { accounts } = require('../services');
 
 passport.use(new GitHubStrategy({
   clientID: config.get('GITHUB_CLIENT_ID'),
   clientSecret: config.get('GITHUB_SECRET'),
 }, async (accessToken, refreshToken, profile, done) => {
-  const id = `github:${profile.id}`;
+  // Use here provider-to-user mapping
+  const ghId = `github:${profile.id}`;
+  const id = await accounts.findOrCreateNew(ghId);
+
   const { avatar_url, name, email, login } = profile._json; // eslint-disable-line
+
   const userProfile = {
     id, avatar_url: avatar_url.split('?')[0], name: name || login, login, email, provider: 'github',
   }; // split because JWT is weird
