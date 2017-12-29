@@ -6,7 +6,7 @@ module.exports = {
   async findOrCreateNew(providerId) {
     const id = await accounts.findByProviderId(providerId);
     if (!id) {
-      const newId = `l:${randomatic('Aa0!', 6)}`;
+      const newId = `l:${randomatic('Aa0', 6)}`;
       return (await accounts.add({ id: newId, providerId })).id;
     }
     return id;
