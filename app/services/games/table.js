@@ -1,5 +1,6 @@
 const { games, competitors, contests } = require('../../db');
 const R = require('ramda');
+const detailedGame = require('./detailedGame');
 
 const zeroFillObj = (...values) => R.reduce((acc, v) => ({ ...acc, [v]: 0 }), [], values);
 const resultEvolve = R.evolve({
@@ -112,6 +113,7 @@ module.exports = {
       games.findById(gid),
       this.getTable({ gid }),
     ]);
-    return games.update({ ...game, table });
+    return games.update({ ...game, table })
+      .then(() => detailedGame({ gid }));
   },
 };

@@ -6,7 +6,7 @@ const config = require('../app/config');
 
 config(configTest);
 
-const app = require('../app/app');
+const app = require('../app/app')();
 const request = require('supertest')(app);
 const R = require('ramda');
 const db = require('../app/db');

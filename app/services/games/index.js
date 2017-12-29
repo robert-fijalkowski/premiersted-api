@@ -54,7 +54,7 @@ module.exports = {
       update,
     );
     return games
-      .update({ ...filteredFields, ...game })
+      .update({ ...game, ...filteredFields })
       .then(() => detailedGame({ gid: update.id }));
   },
   async contestTeaser({ cid }) {

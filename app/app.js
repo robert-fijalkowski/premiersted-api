@@ -6,25 +6,31 @@ const github = require('./utils/github');
 const cors = require('./utils/cors');
 const { decodeJWT } = require('./utils/jwt');
 const timeout = require('connect-timeout'); // express v4
+const routing = require('./router');
+const exWs = require('express-ws');
+const errorHandling = require('./utils/errorHandling');
 
-
-const app = express();
-
-require('express-ws')(app);
-require('./utils/errorHandling')(app);
-
-app.use(bodyParser.json());
-app.use(decodeJWT);
-cors(app);
-
-app.use((req, res, next) => {
-  if (req.upgrade) {
-    return next();
+module.exports = (middleware) => {
+  const app = express();
+  if (middleware) {
+    app.use(middleware);
   }
-  return timeout('5s')(req, res, next);
-});
+  exWs(app);
+  errorHandling(app);
 
-app.use('/_github', github);
-require('./router')(app);
+  app.use(bodyParser.json());
+  app.use(decodeJWT);
+  cors(app);
 
-module.exports = app;
+  app.use((req, res, next) => {
+    if (req.upgrade) {
+      return next();
+    }
+    return timeout('5s')(req, res, next);
+  });
+
+  app.use('/_github', github);
+  routing(app);
+  return app;
+};
+
