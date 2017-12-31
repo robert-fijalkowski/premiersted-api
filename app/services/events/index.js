@@ -10,11 +10,10 @@ const isObject = R.both(R.is(Object), R.complement(R.is(Function)));
 const isFunction = R.is(Function);
 const isString = R.is(String);
 let subscriptions = [];
-
 const basicRelateResolver = [
   [R.propEq('relate', '*'), R.prop('relate')],
-  [R.propEq('type', 'games'), R.pipe(R.prop('relate'), gamesTeaser)],
-  [R.either(R.propEq('type', 'contest'), R.propEq('type', 'contests')), R.pipe(R.prop('relate'), cid => games.contest({ cid }))],
+  [R.propEq('type', 'games'), R.pipe(R.prop('relate'), gamesTeaser.fresh)],
+  // [R.either(R.propEq('type', 'contest'), R.propEq('type', 'contests')), R.pipe(R.prop('relate'), cid => games.contest({ cid }))],
   [R.propEq('type', 'users'), R.pipe(R.prop('relate'), id => users.cachedFind({ id }))],
   [R.propEq('type', 'clubs'), R.pipe(R.prop('relate'), id => Promise.resolve(clubs.get({ id })))],
 ];
@@ -68,7 +67,7 @@ const decorateEvent = async (event) => {
   };
 };
 
-const broadcastEvent = event => () => process.nextTick(async () => {
+const broadcastEvent = event => () => setTimeout(async () => {
   if (!R.isEmpty(subscriptions)) {
     const [decorated, raw] = R.partition(R.pathEq(['upgradeReq', 'query', 'raw'], undefined))(subscriptions);
     raw.forEach(ws => process.nextTick(() => ws.send(JSON.stringify(event))));
@@ -77,7 +76,7 @@ const broadcastEvent = event => () => process.nextTick(async () => {
       decorated.forEach(ws => process.nextTick(() => ws.send(JSON.stringify(decoratedEvent))));
     }
   }
-});
+}, 125);
 
 const store = event => events.add(event)
   .then(broadcastEvent(event))

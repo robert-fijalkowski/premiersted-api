@@ -41,7 +41,7 @@ const propagateAuthIssue = msg => (reqOrWs, res, code = 401) => {
 };
 
 const decodeJWT = (req, res, next) => {
-  const token = req.headers['auth-token'];
+  const token = req.headers['auth-token'] || req.headers['sec-websocket-protocol'];
   if (!req.user && token) {
     jwt.verify(token, config.get('JWT_SECRET'), {}, (err, decoded) => {
       if (err) {

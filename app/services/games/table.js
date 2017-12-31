@@ -113,7 +113,7 @@ module.exports = {
       games.findById(gid),
       this.getTable({ gid }),
     ]);
-    return games.update({ ...game, table })
+    return games.update({ ...game, table: R.isEmpty(table) ? undefined : table })
       .then(() => detailedGame({ gid }));
   },
 };

@@ -15,7 +15,7 @@ const fetchUsersFromTable = async (game) => {
 
 module.exports = async (list) => {
   const a = R.cond([
-    [R.has('table'), fetchUsersFromTable],
+    [R.both(R.has('table'), R.complement(R.propEq('status', 'OPEN'))), fetchUsersFromTable],
     [R.T, fromCompetitorsList],
   ]);
   return Promise.all(R.map(a, list));

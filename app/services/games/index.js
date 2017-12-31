@@ -6,6 +6,7 @@ const detailedGame = require('./detailedGame');
 const schedule = require('./schedule');
 const results = require('./results');
 const table = require('./table');
+
 const complete = require('./complete');
 const teaser = require('./teaser');
 const contest = require('./contest');
@@ -38,11 +39,15 @@ module.exports = {
   },
   async addCompetitor(gid, { uid, club }) {
     await rules.addCompetitor({ gid, uid, club });
-    return competitors.add({ gid, uid, club }).then(() => detailedGame({ gid }));
+    await competitors.add({ gid, uid, club });
+    await table.updateTable({ gid });
+    return detailedGame({ gid });
   },
   async delCompetitor(gid, { uid }) {
     await rules.deleteCompetitor({ gid, uid });
-    return competitors.delete({ gid, uid }).then(() => detailedGame({ gid }));
+    await competitors.delete({ gid, uid });
+    await table.updateTable({ gid });
+    return detailedGame({ gid });
   },
   async create(o) {
     return games.create(o).then(({ id }) => detailedGame({ gid: id }));
