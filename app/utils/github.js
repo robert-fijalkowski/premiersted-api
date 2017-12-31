@@ -9,7 +9,7 @@ app.use(passport.initialize());
 
 const GitHubStrategy = require('passport-github').Strategy;
 const { users } = require('../db');
-const { accounts } = require('../services');
+const accounts = require('../services/accounts');
 
 passport.use(new GitHubStrategy({
   clientID: config.get('GITHUB_CLIENT_ID'),

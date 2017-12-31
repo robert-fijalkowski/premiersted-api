@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config')();
 
-const { users, level } = require('../services');
+const users = require('../services/users');
+const level = require('../services/level');
 
 const getToken = ({ user }) =>
   jwt.sign(user, config.get('JWT_SECRET'), {

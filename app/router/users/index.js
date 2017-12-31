@@ -3,7 +3,12 @@ const app = require('express')();
 const { users } = require('../../services');
 const { protectLevel, protect } = require('../../utils/jwt');
 const { NotFound, withError } = require('../exceptions');
+const { predefined } = require('../../services/events');
 
+const usersEvent = predefined({
+  type: 'users',
+  relate: ({ req, res }) => req.params.id || res.body.id,
+});
 const onlyAdmin = protectLevel('ADMIN');
 const userExists = async ({ params: { id } }, res, next) => {
   const exists = await users.exists({ id });
@@ -30,7 +35,7 @@ app.get('/:id', protect, userExists, (req, res) => {
   res.handle(users.get(req.params));
 });
 
-app.put('/:id', ownChangeOrAdmin, userExists, (req, res) => {
+app.put('/:id', ownChangeOrAdmin, usersEvent('User api://users/{{props.id}} has changed properties'), userExists, (req, res) => {
   res.handle(users.update({
     body: req.body, id: req.params.id,
   }, { right: req.user.access }));
