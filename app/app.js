@@ -9,13 +9,14 @@ const timeout = require('connect-timeout'); // express v4
 const routing = require('./router');
 const exWs = require('express-ws');
 const errorHandling = require('./utils/errorHandling');
+const hearthbeat = require('./utils/hearthbeat');
 
 module.exports = (middleware) => {
   const app = express();
   if (middleware) {
     app.use(middleware);
   }
-  exWs(app);
+  hearthbeat(exWs(app).getWss());
   errorHandling(app);
 
   app.use(bodyParser.json());
